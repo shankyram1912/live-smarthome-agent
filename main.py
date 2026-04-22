@@ -225,11 +225,14 @@ async def websocket_endpoint(
                     print("\n" + "="*50)
                     print(f"🤖 AI AGENT FINISHED: {event.output_transcription.text}")
                     print("="*50 + "\n", flush=True)                 
-                        
+               
                 # Always forward the raw event to the frontend (for audio), everything else is JSON
-                if hasattr(part, 'inline_data') and part.inline_data:
-                    if hasattr(part.inline_data, 'data') and part.inline_data.data:
-                        await websocket.send_bytes(part.inline_data.data)
+                if event.content and event.content.parts:
+                    part = event.content.parts[0]
+                    if part.inline_data:                                                
+                        if hasattr(part, 'inline_data') and part.inline_data:
+                            if hasattr(part.inline_data, 'data') and part.inline_data.data:
+                                await websocket.send_bytes(part.inline_data.data)
                 else:                
                     await websocket.send_text(event_json)
 
