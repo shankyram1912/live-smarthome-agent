@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+websockets
+google-genai
+pydantic
+python-dotenv
+google-adk
