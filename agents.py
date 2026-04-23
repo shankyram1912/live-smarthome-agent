@@ -54,6 +54,6 @@ aris_agent = LlmAgent(
     name="Aris",
     model=config.ORCHESTRATOR_MODEL,
     instruction=ARIS_INSTRUCTIONS,
-    before_agent_callback=load_device_topology
+    before_agent_callback=load_device_topology,
     tools=[toolInstance.control_airconditioner]  # Wrapper tools for subagents
 )
