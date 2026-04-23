@@ -42,18 +42,18 @@ Tool: control_airconditioner
 
 <smart_home_devices> 
 Here is the current state of all the smart home's devices:
-```yaml
-{state.device_topology_yaml}
+```JSON
+{state.smart_home_devices}
 ```
 </smart_home_devices> 
 """
 
-def load_device_topology(callback_context: CallbackContext):
+def get_smart_home_devices(callback_context: CallbackContext):
 # Fetches the live database state and constructs the agent's system prompt.  
-    logger.info(f"[Retrieving device topology with load_device_topology]")
-    topology = toolInstance.get_device_topology_yaml()
-    logger.info(f"[Retrieved device topology with load_device_topology - {topology}]")
-    callback_context.state["device_topology_yaml"] = toolInstance.get_device_topology_yaml()
+    logger.info(f"[Retrieving device topology with get_smart_home_devices]")
+    smart_home_devices = toolInstance.get_device_topology()
+    logger.info(f"[Retrieved smart_home_devices with get_smart_home_devices - {smart_home_devices}]")
+    callback_context.state["device_topology"] = smart_home_devices
 
 
 # * When 'control_checkcamera' returns an image and metadata, use BOTH to describe the scene naturally. Example: "Grandmother and a delivery driver are at the front door."
@@ -63,6 +63,6 @@ aris_agent = LlmAgent(
     name="Aris",
     model=config.ORCHESTRATOR_MODEL,
     instruction=ARIS_INSTRUCTIONS,
-    before_agent_callback=load_device_topology,
+    before_agent_callback=get_smart_home_devices,
     tools=[toolInstance.control_airconditioner]  # Wrapper tools for subagents
 )

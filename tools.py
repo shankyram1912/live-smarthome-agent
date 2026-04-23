@@ -51,8 +51,8 @@ class Tools:
             logger.error(f"⚠️ Failed to connect to Firestore: {e}")
             raise ValueError(f"⚠️ GOOGLE_CLOUD_FIRESTORE Failed to connect to Firestore: {e}")
 
-    def get_device_topology_yaml(self) -> str:
-        """Fetches the live database and formats it into the strict YAML schema."""
+    def get_smart_home_devices(self) -> str:
+        """Fetches the live smart home devices"""
         if not self.db:
             logger.error("⚠️ Unable to retrieve smart home devices status, database connection not initialized!")
             return yaml.dump({"Information": "Unable to retrieve smart home devices status"})
@@ -65,10 +65,10 @@ class Tools:
                 return "home_devices: []"
 
             devices_map = doc.to_dict().get("devices", {})
-            yaml_list = []
+            smart_device_list = []
 
             for device_id, data in devices_map.items():
-                yaml_list.append({
+                smart_device_list.append({
                     "id": data.get("id", device_id),
                     "deviceLabel": data.get("deviceLabel", "Unknown"),
                     "room": data.get("room", "Unknown"),
@@ -76,9 +76,9 @@ class Tools:
                     "currentSettingValue": data.get("currentSettingValue", "")
                 })
 
-            logger.info(f"[@@@ DEVICE CONFIG] {yaml_list}")
+            logger.info(f"[@@@ DEVICE CONFIG] {smart_device_list}")
             
-            return yaml.dump({"home_devices": yaml_list}, default_flow_style=False, sort_keys=False)
+            return smart_device_list
         except Exception as e:
             logger.error(f"Topology read failed: {str(e)}")
             return yaml.dump({"error": "Failed to fetch device topology."})
