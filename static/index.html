@@ -1144,7 +1144,7 @@
                     devicesData = Object.values(data.devices);
                     
                     // 2. SORT BY DEVICE TYPE ALPHABETICALLY
-                    devicesData.sort((a, b) => a.deviceType.localeCompare(b.deviceType));
+                    devicesData.sort((a, b) => a.id.localeCompare(b.id));
                     
                     // 3. TALLY SUB-COUNTS BY DEVICE TYPE
                     const typeCounts = { ac: 0, camera: 0, light: 0, lock: 0 };
