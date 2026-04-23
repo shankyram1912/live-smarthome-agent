@@ -161,7 +161,7 @@ class Tools:
                 "oldSettingValue": oldSettingValue,
                 "currentSettingValue": finalSettingValue
             }
-            return yaml.dump(response_dict, default_flow_style=False, sort_keys=False)
+            return response_dict
             
         except Exception as e:
             logger.error(f"Failed to update AC {id}: {str(e)}")
