@@ -1229,7 +1229,8 @@
                 setTimeout(() => { aiEl.innerText = aiText; if (aiText) aiEl.classList.add('visible'); }, 400);
             }
         }
-
+        
+        /*
         async function sleep(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
         }
@@ -1320,6 +1321,7 @@
             updateTranscript('Awaiting voice input...', '');
             isSimulating = false;
         }
+        */
 
         window.onload = () => {
             renderDeviceGrid();
