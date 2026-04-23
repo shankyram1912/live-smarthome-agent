@@ -68,12 +68,15 @@ class Tools:
             smart_device_list = []
 
             for device_id, data in devices_map.items():
+                
+                current_state = data.get("state", "off")
+                
                 smart_device_list.append({
                     "id": data.get("id", device_id),
                     "deviceLabel": data.get("deviceLabel", "Unknown"),
                     "room": data.get("room", "Unknown"),
                     "state": data.get("state", "off"),
-                    "currentSettingValue": data.get("currentSettingValue", ""),
+                    "currentSettingValue": "" if current_state == "off" else data.get("currentSettingValue", ""),
                     "defaultSettingValue": data.get("defaultSettingValue", "")
                 })
             
