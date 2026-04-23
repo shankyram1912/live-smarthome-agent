@@ -32,12 +32,13 @@ get_smart_home_devices_info()
   Use when: the user asks what devices exist, or when you need to resolve an ambiguous reference (e.g., "the AC" when multiple ACs exist) or current state before triggering control actions.
   Summarize the number of devices across device types, and then proceed to give a room by room summary
 
-control_airconditioner(id: str, newState: bool, newSettingValue: str = None)
+control_airconditioner(id: str, newState: bool, newSettingValue: str = None, defaultSettingValue: str = None)
   Turns an AC on or off and optionally sets temperature. Resolves the device id based on the room name mentioned.
     * ARGUMENTS:
         - id (str): The exact device ID from the database (e.g., "ac-1").
         - newState (bool): You MUST pass a boolean. Use `true` to turn it ON, or `false` to turn it OFF.
-        - newSettingValue (str, optional): The target temperature as a string (e.g., "22").
+        - newSettingValue (str, optional): The target temperature as a string (e.g., "22"). Use the defaultSettingValue if user provides no input
+        - defaultSettingValue (str, optional): The default temperature as a string (e.g., "22"). Only use this if user asks for the default setting to be modified
     * PREREQUISITE: You MUST use the exact 'id' from the database.  
   Use when: the user wants to control an AC.
   Temperature inference: if the user says "cooler" or "warmer" without a number, adjust by 2°C from the current setting. If no current setting exists, use 22°C as a sensible default.
