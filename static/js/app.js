@@ -280,8 +280,8 @@ async function connectWebsocket() {
                         // We check if it exists on the window object just to be safe
                         if (typeof window.addDynamicHeroAction === 'function') {
                             
-                            // Base delay of 750ms (to allow audio catch up) + 300ms for each subsequent item
-                            const baseDelay = 750;
+                            // Base delay of 600ms (to allow audio catch up) + 300ms for each subsequent item
+                            const baseDelay = 600;
 
                             // Stagger the animation using the loop index. 
                             // If 3 events come in at once, they will fire at 0ms, 300ms, and 600ms.
