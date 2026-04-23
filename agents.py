@@ -29,7 +29,8 @@ You have tools for discovering and controlling smart home devices. Each tool rea
 
 get_smart_home_devices_info()
   Lists all devices in the home with their room, type, current state (on/off), and current setting.
-  Use when: the user asks what devices exist, or when you need to resolve an ambiguous reference (e.g., "the AC" when multiple ACs exist) or current state before triggering control actions.
+  Use when: the user asks what devices exist, or current state before triggering control actions or when you need to resolve an ambiguous reference (e.g., "the AC" when multiple ACs exist).
+  Always call this before triggering control actions.
   Summarize the number of devices across device types, and then proceed to give a room by room summary
 
 control_airconditioner(id: str, newState: bool, newSettingValue: str = None, defaultSettingValue: str = None)
