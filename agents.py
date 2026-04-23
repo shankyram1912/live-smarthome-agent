@@ -47,13 +47,19 @@ Tool: control_airconditioner
 </guardrails>
 """
 
-def callback_smart_home_devices(callback_context: CallbackContext):
+def before_agent_callback_smart_home_devices(callback_context: CallbackContext):
 # Fetches the live database state and constructs the agent's system prompt.  
-    logger.info(f"[Retrieving device topology with get_smart_home_devices]")
+    logger.info(f"[Retrieving device topology in before_agent_callback_smart_home_devices]")
     smart_home_devices = toolInstance.get_smart_home_devices()
-    logger.info(f"[Retrieved smart_home_devices with get_smart_home_devices - {smart_home_devices}]")
-    callback_context.state["device_topology"] = smart_home_devices
+    logger.info(f"[Retrieved smart_home_devices in before_agent_callback_smart_home_devices - {smart_home_devices}]")
+    callback_context.state["smart_home_devices"] = smart_home_devices
+    return None
 
+def before_model_callback_log_request(
+    callback_context: CallbackContext, llm_request: LlmRequest
+) -> Optional[LlmResponse]:
+    logger.info(f"[Inspecting LLM Request System Instruction - {llm_request.config.system_instruction}]")
+    return None
 
 # * When 'control_checkcamera' returns an image and metadata, use BOTH to describe the scene naturally. Example: "Grandmother and a delivery driver are at the front door."
 
@@ -62,6 +68,7 @@ aris_agent = LlmAgent(
     name="Aris",
     model=config.ORCHESTRATOR_MODEL,
     instruction=ARIS_INSTRUCTIONS,
-    before_model_callback=callback_smart_home_devices,
+    before_agent_callback=before_agent_callback_smart_home_devices,
+    before_model_callback=before_model_callback_log_request,
     tools=[toolInstance.control_airconditioner]  # Wrapper tools for subagents
 )
