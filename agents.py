@@ -1,10 +1,13 @@
 from google.adk.agents import LlmAgent
 from google.adk.agents.callback_context import CallbackContext
 
+import logging
+
 import config
 from tools import Tools
 
 toolInstance = Tools()
+logger = logging.getLogger(__name__)
 
 # System Instructions
 ARIS_INSTRUCTIONS = """
@@ -45,7 +48,11 @@ Here is the current topology of the smart home's devices:
 
 def load_device_topology(callback_context: CallbackContext):
 # Fetches the live database state and constructs the agent's system prompt.  
-    callback_context.state["device_topology_yaml"] = toolInstance.get_device_topology_yaml() 
+    logger.info(f"[Retrieving device topology with load_device_topology]")
+    topology = toolInstance.get_device_topology_yaml()
+    logger.info(f"[Retrieved device topology with load_device_topology - {topology}]")
+    callback_context.state["device_topology_yaml"] = toolInstance.get_device_topology_yaml()
+
 
 # * When 'control_checkcamera' returns an image and metadata, use BOTH to describe the scene naturally. Example: "Grandmother and a delivery driver are at the front door."
 
