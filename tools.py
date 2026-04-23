@@ -81,7 +81,12 @@ class Tools:
                 })
             
             smart_device_list_yaml = yaml.dump(smart_device_list)
-            logger.info(f"Smart home devices YAML - \n {smart_device_list_yaml}")
+            
+            # Log tool calls
+            print("\n" + "="*50)
+            print(f"🔧 TOOL EXECUTION] get_smart_home_devices_info \n {smart_device_list_yaml}")
+            print("="*50 + "\n", flush=True)            
+            logger.debug(f"Smart home devices YAML - \n {smart_device_list_yaml}")
             return smart_device_list_yaml
 
         except Exception as e:
@@ -96,6 +101,7 @@ class Tools:
             id: The exact ID of the AC unit (mandatory).
             newState: The desired state as a boolean, True for ON, False for OFF (mandatory).
             newSettingValue: The target temperature as a string (optional).
+            defaultSettingValue: The default temperature as a string (optional).
         """
         if not self.db:
             return yaml.dump({"error": "Database connection not initialized."})
@@ -103,6 +109,10 @@ class Tools:
         # Evaluate the boolean against the Enum
         target_state_str = DeviceState.ON.value if newState else DeviceState.OFF.value
 
+        # Log tool calls
+        print("\n" + "="*50)
+        print(f"[🔧 TOOL EXECUTION] control_airconditioner(id={id}, newState={newState} -> '{target_state_str}', newSettingValue={newSettingValue})")
+        print("="*50 + "\n", flush=True)   
         logger.info(f"[🔧 TOOL EXECUTION] control_airconditioner(id={id}, newState={newState} -> '{target_state_str}', newSettingValue={newSettingValue})")
 
         # Cache check using the instance dictionary
@@ -167,14 +177,19 @@ class Tools:
             logger.error(f"Failed to update AC {id}: {str(e)}")
             return yaml.dump({"error": f"Database update failed: {str(e)}"})
         
-    def control_camera(self, id: str, newState: bool, newSettingValue: str = None, defaultSettingValue: str = None) -> str:
+    def control_camera(
+        self, id: str, 
+        newState: bool, 
+        newSettingValue: Literal["Online", "Private", "Protect"] = None,
+        defaultSettingValue: Literal["Online", "Private", "Protect"] = None) -> str:
         """
-        SILENT EXECUTION. Controls an Air Conditioner unit in the smart home.
+        SILENT EXECUTION. Controls an Smart Camera in the smart home.
 
         Args:
-            id: The exact ID of the AC unit (mandatory).
+            id: The exact ID of the Smart camera unit (mandatory).
             newState: The desired state as a boolean, True for ON, False for OFF (mandatory).
-            newSettingValue: The target temperature as a string (optional).
+            newSettingValue: The camera's security mode as a string. Must be exactly "Online", "Private", or "Protect" (optional).
+            defaultSettingValue: The camera's default security mode as a string. Must be exactly "Online", "Private", or "Protect" (optional).
         """
         if not self.db:
             return yaml.dump({"error": "Database connection not initialized."})
@@ -182,7 +197,11 @@ class Tools:
         # Evaluate the boolean against the Enum
         target_state_str = DeviceState.ON.value if newState else DeviceState.OFF.value
 
-        logger.info(f"[🔧 TOOL EXECUTION] control_airconditioner(id={id}, newState={newState} -> '{target_state_str}', newSettingValue={newSettingValue})")
+        # Log tool calls
+        print("\n" + "="*50)
+        print(f"[🔧 TOOL EXECUTION] control_camera(id={id}, newState={newState} -> '{target_state_str}', newSettingValue={newSettingValue})")
+        print("="*50 + "\n", flush=True)   
+        logger.info(f"[🔧 TOOL EXECUTION] control_camera(id={id}, newState={newState} -> '{target_state_str}', newSettingValue={newSettingValue})")
 
         # Cache check using the instance dictionary
         cache_key = f"{id}_{target_state_str}_{newSettingValue}"
@@ -243,5 +262,5 @@ class Tools:
             return response_dict
             
         except Exception as e:
-            logger.error(f"Failed to update AC {id}: {str(e)}")
-            return yaml.dump({"error": f"Database update failed: {str(e)}"})        
+            logger.error(f"Failed to update camera {id}: {str(e)}")
+            return yaml.dump({"error": f"Database update failed: {str(e)}"})
