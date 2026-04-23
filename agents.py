@@ -48,10 +48,10 @@ Here is the current state of all the smart home's devices:
 </smart_home_devices> 
 """
 
-def get_smart_home_devices(callback_context: CallbackContext):
+def callback_smart_home_devices(callback_context: CallbackContext):
 # Fetches the live database state and constructs the agent's system prompt.  
     logger.info(f"[Retrieving device topology with get_smart_home_devices]")
-    smart_home_devices = toolInstance.get_device_topology()
+    smart_home_devices = toolInstance.get_smart_home_devices()
     logger.info(f"[Retrieved smart_home_devices with get_smart_home_devices - {smart_home_devices}]")
     callback_context.state["device_topology"] = smart_home_devices
 
@@ -63,6 +63,6 @@ aris_agent = LlmAgent(
     name="Aris",
     model=config.ORCHESTRATOR_MODEL,
     instruction=ARIS_INSTRUCTIONS,
-    before_agent_callback=get_smart_home_devices,
+    before_agent_callback=callback_smart_home_devices,
     tools=[toolInstance.control_airconditioner]  # Wrapper tools for subagents
 )
