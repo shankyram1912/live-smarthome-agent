@@ -40,9 +40,9 @@ class Tools:
         logger.info(f"Connecting to Firestore instance: {db_id} in project {project_id}")
 
         try:
-            self.db = firestore.client(
+            self.db = firestore.Client(
                 project=project_id, 
-                database_id=db_id
+                database=db_id
             )
             logger.info(f"✅ Connected to Firestore instance: {db_id} in project {project_id}")
             
