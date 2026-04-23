@@ -43,7 +43,7 @@ Here is the current topology of the smart home's devices:
 </smart_home_topology> 
 """
 
-def load_device_topology(callback_context: CallbackContext):
+async def load_device_topology(callback_context: CallbackContext):
 # Fetches the live database state and constructs the agent's system prompt.  
     callback_context.state["device_topology_yaml"] = toolInstance.get_device_topology_yaml() 
 
