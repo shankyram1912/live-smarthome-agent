@@ -280,11 +280,14 @@ async function connectWebsocket() {
                         // We check if it exists on the window object just to be safe
                         if (typeof window.addDynamicHeroAction === 'function') {
                             
+                            // Base delay of 200ms (to allow audio catch up) + 300ms for each subsequent item
+                            const baseDelay = 800;
+
                             // Stagger the animation using the loop index. 
                             // If 3 events come in at once, they will fire at 0ms, 300ms, and 600ms.
                             setTimeout(() => {
                                 window.addDynamicHeroAction(deviceData);
-                            }, index * 300);
+                            }, baseDelay + index * 300);
                             
                         } else {
                             console.warn("addDynamicHeroAction is not defined on the window object.");
