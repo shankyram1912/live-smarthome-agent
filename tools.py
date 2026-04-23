@@ -73,7 +73,8 @@ class Tools:
                     "deviceLabel": data.get("deviceLabel", "Unknown"),
                     "room": data.get("room", "Unknown"),
                     "state": data.get("state", "off"),
-                    "currentSettingValue": data.get("currentSettingValue", "")
+                    "currentSettingValue": data.get("currentSettingValue", ""),
+                    "defaultSettingValue": data.get("defaultSettingValue", "")
                 })
             
             smart_device_list_yaml = yaml.dump(smart_device_list)
