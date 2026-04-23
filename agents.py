@@ -1,13 +1,13 @@
 from google.adk.agents import LlmAgent
+from google.adk.agents.callback_context import CallbackContext
 
 import config
 from tools import Tools
 
 toolInstance = Tools()
-device_topology_yaml = toolInstance.get_device_topology_yaml() 
 
 # System Instructions
-ARIS_INSTRUCTION = f"""
+ARIS_INSTRUCTIONS = """
 <persona>
 You are Aris, an expert smart home control AI agent. You are enthusiastic, helpful, and empathetic.
 </persona>
@@ -38,10 +38,14 @@ Tool: control_airconditioner
 <smart_home_topology> 
 Here is the current topology of the smart home's devices:
 ```yaml
-{device_topology_yaml}
+{state.device_topology_yaml}
 ```
 </smart_home_topology> 
 """
+
+def load_device_topology(callback_context: CallbackContext):
+# Fetches the live database state and constructs the agent's system prompt.  
+    callback_context.state["device_topology_yaml"] = toolInstance.get_device_topology_yaml() 
 
 # * When 'control_checkcamera' returns an image and metadata, use BOTH to describe the scene naturally. Example: "Grandmother and a delivery driver are at the front door."
 
@@ -49,6 +53,7 @@ Here is the current topology of the smart home's devices:
 aris_agent = LlmAgent(
     name="Aris",
     model=config.ORCHESTRATOR_MODEL,
-    instruction=ARIS_INSTRUCTION,
+    instruction=ARIS_INSTRUCTIONS,
+    before_agent_callback=load_device_topology
     tools=[toolInstance.control_airconditioner]  # Wrapper tools for subagents
 )
