@@ -251,6 +251,49 @@ async function connectWebsocket() {
             }
         }        
 
+        // 1. Safely check if the event contains 'content' and 'parts'
+        if (adkEvent.content?.parts) {
+            
+            // 2. Loop through the parts (Gemini can sometimes return multiple tool calls in one event)
+            adkEvent.content.parts.forEach((part, index) => {
+                
+                // 3. Check if this part is a function response
+                if (part.functionResponse) {
+                    
+                    // Define your active smart home tools
+                    const smartHomeTools = [
+                        "control_airconditioner",
+                        "control_camera",
+                        "control_light",
+                        "control_lock"
+                    ];
+
+                    // 4. If the response matches one of our device tools, trigger the UI
+                    if (smartHomeTools.includes(part.functionResponse.name)) {
+                        
+                        // Extract the inner response payload
+                        const deviceData = part.functionResponse.response;
+                        
+                        console.log(`✅ Device Event [${part.functionResponse.name}] Detected:`, deviceData);
+                        
+                        // 5. Fire the Dynamic Hero Stack animation!
+                        // We check if it exists on the window object just to be safe
+                        if (typeof window.addDynamicHeroAction === 'function') {
+                            
+                            // Stagger the animation using the loop index. 
+                            // If 3 events come in at once, they will fire at 0ms, 300ms, and 600ms.
+                            setTimeout(() => {
+                                window.addDynamicHeroAction(deviceData);
+                            }, index * 300);
+                            
+                        } else {
+                            console.warn("addDynamicHeroAction is not defined on the window object.");
+                        }
+                    }
+                }
+            });
+        }
+
         // -- Audio playback --
         if (adkEvent.content && adkEvent.content.parts) {
             const audioParts = adkEvent.content.parts.filter(
