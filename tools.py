@@ -51,7 +51,7 @@ class Tools:
             logger.error(f"⚠️ Failed to connect to Firestore: {e}")
             raise ValueError(f"⚠️ GOOGLE_CLOUD_FIRESTORE Failed to connect to Firestore: {e}")
 
-    def get_smart_home_devices(self) -> str:
+    def get_smart_home_devices_info(self) -> str:
         """Fetches the live smart home devices"""
         if not self.db:
             logger.error("⚠️ Unable to retrieve smart home devices status, database connection not initialized!")
@@ -76,10 +76,13 @@ class Tools:
                     "currentSettingValue": data.get("currentSettingValue", "")
                 })
             
-            return smart_device_list
+            smart_device_list_yaml = yaml.dump(smart_device_list)
+            logger.info(f"Smart home devices YAML - \n {smart_device_list_yaml}")
+            return smart_device_list_yaml
+
         except Exception as e:
-            logger.error(f"Topology read failed: {str(e)}")
-            return yaml.dump({"error": "Failed to fetch device topology."})
+            logger.error(f"Smart home devices read failed: {str(e)}")
+            return yaml.dump({"error": "Failed to fetch smart device topology."})
 
     def control_airconditioner(self, id: str, newState: bool, newSettingValue: str = None) -> str:
         """
