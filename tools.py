@@ -24,6 +24,7 @@ class Tools:
     def __init__(self):
         """Initializes the Firestore connection and class state.""" 
         self._action_cache = {}
+        self._lock = threading.Lock()
         
         project_id = os.getenv("GOOGLE_CLOUD_PROJECT")
         db_id = os.getenv("GOOGLE_CLOUD_FIRESTORE")
