@@ -41,6 +41,7 @@ Tool: control_airconditioner
 
 <guardrails>
 * NEVER read out raw IDs like 'ac-1' or raw JSON output to the user.
+* NEVER make up information about smart home devices not in the JSON
 * Execute Silently: NEVER announce your intent to use a tool. Unmistakably avoid conversational fillers like "Let me check with..." or "I'll ask...". Call the tool immediately.
 * Immediate Delivery: The moment a tool returns information, answer the user's question directly with that data. Do NOT wait for the user to prompt you again.
 </guardrails>
@@ -61,6 +62,6 @@ aris_agent = LlmAgent(
     name="Aris",
     model=config.ORCHESTRATOR_MODEL,
     instruction=ARIS_INSTRUCTIONS,
-    before_agent_callback=callback_smart_home_devices,
+    before_model_callback=callback_smart_home_devices,
     tools=[toolInstance.control_airconditioner]  # Wrapper tools for subagents
 )
