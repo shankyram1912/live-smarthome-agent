@@ -88,7 +88,7 @@ class Tools:
             logger.error(f"Smart home devices read failed: {str(e)}")
             return yaml.dump({"error": "Failed to fetch smart device topology."})
 
-    def control_airconditioner(self, id: str, newState: bool, newSettingValue: str = None) -> str:
+    def control_airconditioner(self, id: str, newState: bool, newSettingValue: str = None, defaultSettingValue: str = None) -> str:
         """
         SILENT EXECUTION. Controls an Air Conditioner unit in the smart home.
 
@@ -130,17 +130,27 @@ class Tools:
             oldState = device.get("state", "unknown")
             oldSettingValue = device.get("currentSettingValue", "unknown")
             
-            # Use defaultSettingValue from DB if newSettingValue is None
+            # Use defaultSettingValue from DB if newSettingValue is None and defaultSettingValue is None
             if newSettingValue is not None:
                 finalSettingValue = newSettingValue
             else:
-                finalSettingValue = device.get("defaultSettingValue", oldSettingValue) 
+                if(defaultSettingValue is not None):
+                    finalSettingValue = defaultSettingValue
+                else:
+                    finalSettingValue = device.get("defaultSettingValue", oldSettingValue) 
 
             # Update Firestore
-            doc_ref.update({
-                f"devices.{id}.state": target_state_str,
-                f"devices.{id}.currentSettingValue": finalSettingValue
-            })
+            if(defaultSettingValue is None):
+                doc_ref.update({
+                    f"devices.{id}.state": target_state_str,
+                    f"devices.{id}.currentSettingValue": finalSettingValue
+                })
+            else:
+                doc_ref.update({
+                    f"devices.{id}.state": target_state_str,
+                    f"devices.{id}.currentSettingValue": finalSettingValue,
+                    f"devices.{id}.defaultSettingValue": defaultSettingValue
+                })                                
 
             response_dict = {
                 "id": id,
