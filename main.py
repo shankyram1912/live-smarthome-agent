@@ -234,8 +234,11 @@ async def websocket_endpoint(
                             if hasattr(part.inline_data, 'data') and part.inline_data.data:
                                 logger.debug(f"### SENDING AUDIO RESPONSE TO FRONTEND")                                
                                 await websocket.send_bytes(part.inline_data.data)
+                    else:                
+                        logger.info(f"### RESPONSE TO FRONTEND - {event_json}")
+                        await websocket.send_text(event_json)                    
                 else:                
-                    logger.info(f"### TEXT RESPONSE TO FRONTEND - {event_json}")
+                    logger.info(f"### RESPONSE TO FRONTEND - {event_json}")
                     await websocket.send_text(event_json)
 
     # ========================================
