@@ -46,6 +46,7 @@ class Tools:
 
     def get_device_topology_yaml(self) -> str:
         """Fetches the live database and formats it into the strict YAML schema."""
+        logger.info(f"[LOADING DEVICE CONFIG]")
         if not self.db:
             return yaml.dump({"error": "Database connection not initialized."})
 
