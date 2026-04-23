@@ -212,8 +212,8 @@ async def websocket_endpoint(
                     event_type = f"🤖 AI AGENT TALKING: {event.output_transcription.text} IS_FINISHED {event.output_transcription.finished} IS_PARTIAL {event.partial} TURN_COMPLETE {event.turn_complete}"                        
                     
                 # Uncomment for event logging
-                # if event_type:
-                #     print(f"++ {event_type}", flush=True)
+                if event_type:
+                    print(f"++ {event_type}", flush=True)
                 # else:
                 #     print(f"xx UNTAGGED EVENT {event_dict}", flush=True)
                 
