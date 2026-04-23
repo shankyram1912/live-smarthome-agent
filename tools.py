@@ -31,26 +31,31 @@ class Tools:
         db_id = os.getenv("GOOGLE_CLOUD_FIRESTORE")
         
         if not project_id:
-            logger.warning("⚠️ GOOGLE_CLOUD_PROJECT is missing from the environment!")
+            logger.error("⚠️ GOOGLE_CLOUD_PROJECT is missing from the environment!")
+            raise ValueError("⚠️ GOOGLE_CLOUD_PROJECT is missing from the environment!")
         if not db_id:
-            logger.warning("⚠️ GOOGLE_CLOUD_FIRESTORE is missing from the environment!")
+            logger.error("⚠️ GOOGLE_CLOUD_FIRESTORE is missing from the environment!")
+            raise ValueError("⚠️ GOOGLE_CLOUD_FIRESTORE is missing from the environment!")
+            
+        logger.info(f"Connecting to Firestore instance: {db_id} in project {project_id}")
 
         try:
             self.db = firestore.client(
                 project=project_id, 
                 database_id=db_id
             )
-            logger.info(f"✅ Connected to Firestore instance: {db_id}")
+            logger.info(f"✅ Connected to Firestore instance: {db_id} in project {project_id}")
             
         except Exception as e:
             self.db = None
             logger.error(f"⚠️ Failed to connect to Firestore: {e}")
+            raise ValueError(f"⚠️ GOOGLE_CLOUD_FIRESTORE Failed to connect to Firestore: {e}")
 
     def get_device_topology_yaml(self) -> str:
         """Fetches the live database and formats it into the strict YAML schema."""
-        logger.info(f"[LOADING DEVICE CONFIG]")
         if not self.db:
-            return yaml.dump({"error": "Database connection not initialized."})
+            logger.error("⚠️ Unable to retrieve smart home devices status, database connection not initialized!")
+            return yaml.dump({"Information": "Unable to retrieve smart home devices status"})
 
         try:
             doc_ref = self.db.collection("home-users").document("default")
@@ -71,7 +76,7 @@ class Tools:
                     "currentSettingValue": data.get("currentSettingValue", "")
                 })
 
-            logger.info(f"[@@@ DEVICE CONFIG] {yaml_list})")
+            logger.info(f"[@@@ DEVICE CONFIG] {yaml_list}")
             
             return yaml.dump({"home_devices": yaml_list}, default_flow_style=False, sort_keys=False)
         except Exception as e:
