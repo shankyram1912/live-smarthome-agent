@@ -52,6 +52,7 @@
             overflow: hidden;
             padding: 40px;
             position: relative;
+            text-rendering: optimizeLegibility;
         }
 
         body::before {
@@ -363,19 +364,10 @@
             transform: scale(0.98);
         }
 
-        /* --- DEVICE SECTION SEPARATOR --- */
-        .device-section {
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
-            padding-top: 32px;
-            margin-top: 16px;
-            /* Gives some breathing room below the End button */
-        }
-
         /* --- ROW LAYOUT --- */
         .vital-row {
             display: flex;
             justify-content: space-between;
-            /* Pushes text left, number right */
             align-items: center;
             width: 100%;
         }
@@ -383,7 +375,6 @@
         /* --- TEXT STYLING --- */
         .vital-label {
             color: rgba(255, 255, 255, 0.7);
-            /* Muted gray/white color */
             font-size: 14px;
             font-weight: 500;
         }
@@ -438,23 +429,6 @@
             gap: 32px;
             height: 100%;
             position: relative;
-        }
-
-        @keyframes pulse-dot {
-            0% {
-                opacity: 0.5;
-                transform: scale(0.85);
-            }
-
-            50% {
-                opacity: 1;
-                transform: scale(1.1);
-            }
-
-            100% {
-                opacity: 0.5;
-                transform: scale(0.85);
-            }
         }
 
         /* PANEL 2: TRANSCRIPT LAYER */
@@ -517,13 +491,14 @@
             display: flex;
             flex-direction: column;
             height: 100%;
-            transition: filter 0.5s ease, opacity 0.5s ease;
+            transition: filter 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s ease;
         }
 
         .grid-blurred {
-            filter: blur(12px) brightness(0.6);
-            opacity: 0.7;
+            filter: blur(12px) brightness(0.3);
+            opacity: 0.6;
             pointer-events: none;
+            transform: scale(0.98);
         }
 
         .grid-header {
@@ -545,7 +520,7 @@
             padding: 32px 48px;
             display: flex;
             flex-direction: column;
-            overflow-y: auto;
+            overflow-y: hidden;
             flex-grow: 1;
             position: relative;
             z-index: 1;
@@ -689,7 +664,7 @@
             color: #FFFFFF;
         }
 
-        /* --- HERO FOCUS MODE --- */
+        /* --- DYNAMIC HERO STACK OVERLAY --- */
         #hero-overlay {
             position: absolute;
             top: 0;
@@ -702,7 +677,8 @@
             opacity: 0;
             pointer-events: none;
             z-index: 10;
-            transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            background: rgba(0, 0, 0, 0.2); 
         }
 
         #hero-overlay.active {
@@ -710,242 +686,145 @@
             pointer-events: auto;
         }
 
-        .hero-card {
-            width: 420px;
-            height: 420px;
-            background: rgba(30, 30, 32, 0.85);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 48px;
-            padding: 40px;
+        #hero-stack {
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8), inset 0 2px 2px rgba(255, 255, 255, 0.2);
-            transform: scale(0.8) translateY(40px);
-            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.8s ease, box-shadow 0.8s ease, border-color 0.8s ease;
-        }
-
-        #hero-overlay.active .hero-card {
-            transform: scale(1) translateY(0);
-        }
-
-        /* ACTION SUCCESS: This remains Green the entire time the card is active */
-        .hero-action-success {
-            background: rgba(20, 45, 25, 0.95) !important;
-            border-color: var(--apple-green) !important;
-            box-shadow: 0 40px 100px rgba(48, 209, 88, 0.15), inset 0 2px 2px rgba(255, 255, 255, 0.3), 0 0 80px rgba(48, 209, 88, 0.2) !important;
-        }
-
-        .hero-action-success .hero-icon-container {
-            background: var(--apple-green) !important;
-            color: #000 !important;
-            box-shadow: 0 0 40px var(--apple-green-glow), inset 0 2px 4px rgba(255, 255, 255, 0.6) !important;
-        }
-
-        .hero-action-success .hero-metric {
-            color: var(--apple-green) !important;
-            text-shadow: 0 0 30px var(--apple-green-glow);
-        }
-
-
-        .hero-header {
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
             gap: 16px;
+            width: 100%;
+            max-width: 620px; 
+            padding: 80px 20px;
+            max-height: 100%;
+            overflow-y: auto;
+            pointer-events: auto; 
+            scrollbar-width: none; 
+            -ms-overflow-style: none; 
+            mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+        }
+        
+        #hero-stack::-webkit-scrollbar { display: none; }
+
+        /* The Base Row Styling */
+        .hero-row {
+            border-radius: 28px;
+            padding: 24px 28px;
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8), inset 0 2px 2px rgba(255, 255, 255, 0.05);
+            transform: translateY(30px) scale(0.95);
+            opacity: 0;
+            animation: slide-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0; 
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .hero-icon-container {
-            width: 80px;
-            height: 80px;
+        @keyframes slide-in {
+            100% { transform: translateY(0) scale(1); opacity: 1; }
+        }
+
+        .hero-row > * { z-index: 1; position: relative; }
+
+        .hero-row-icon {
+            width: 56px;
+            height: 56px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.08);
             display: flex;
             justify-content: center;
             align-items: center;
-            color: var(--text-primary);
-            box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2);
-            transition: all 0.8s ease;
+            color: #000;
+            box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.4);
+            flex-shrink: 0;
         }
+        .hero-row-icon svg { width: 26px; height: 26px; stroke-width: 2.5px; }
 
-        .hero-icon-container svg {
-            width: 40px;
-            height: 40px;
-            stroke-width: 2px;
-        }
+        .hero-row-info { flex-grow: 1; display: flex; flex-direction: column; gap: 4px; }
+        .hero-row-name { font-size: 20px; font-weight: 700; color: #FFF; letter-spacing: -0.3px; }
+        .hero-row-room { font-size: 15px; font-weight: 500; color: var(--text-secondary); }
 
-        .hero-title-group {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
+        .hero-row-action { display: flex; flex-direction: column; align-items: flex-end; text-align: right; gap: 4px; }
+        .hero-action-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; }
+        .hero-action-metric { font-size: 32px; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -1.5px; line-height: 1; color: #FFF; }
 
-        .hero-name {
-            font-size: 24px;
-            font-weight: 700;
-            color: #FFF;
-            letter-spacing: -0.5px;
+        /* STATE COLORS FOR DYNAMIC HERO ROWS */
+        .hero-row.state-on { 
+            background: linear-gradient(90deg, rgba(48, 209, 88, 0.25) 0%, rgba(20, 20, 22, 0.95) 60%);
+            border-color: rgba(48, 209, 88, 0.4); 
+            box-shadow: 0 20px 60px rgba(48, 209, 88, 0.1), inset 0 2px 2px rgba(255, 255, 255, 0.1); 
         }
+        .hero-row.state-on .hero-row-icon { background: var(--apple-green); box-shadow: 0 0 20px var(--apple-green-glow); }
+        .hero-row.state-on .hero-action-label { color: var(--apple-green); }
 
-        .hero-room {
-            font-size: 16px;
-            font-weight: 500;
-            color: var(--text-secondary);
+        .hero-row.state-off { 
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.08) 0%, rgba(20, 20, 22, 0.95) 60%);
+            border-color: rgba(255, 255, 255, 0.1); 
         }
+        .hero-row.state-off .hero-row-icon { background: rgba(255, 255, 255, 0.15); color: #FFF; box-shadow: none; }
+        .hero-row.state-off .hero-action-label { color: var(--text-secondary); }
+        .hero-row.state-off .hero-action-metric { color: var(--text-secondary); }
 
-        .hero-metric-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+        .hero-row.state-cooling { 
+            background: linear-gradient(90deg, rgba(10, 132, 255, 0.3) 0%, rgba(20, 20, 22, 0.95) 60%);
+            border-color: rgba(10, 132, 255, 0.4); 
+            box-shadow: 0 20px 60px rgba(10, 132, 255, 0.15), inset 0 2px 2px rgba(255, 255, 255, 0.1); 
         }
+        .hero-row.state-cooling .hero-row-icon { background: var(--apple-blue); box-shadow: 0 0 20px var(--apple-blue-glow); }
+        .hero-row.state-cooling .hero-action-label { color: var(--apple-blue); }
 
-        .hero-metric {
-            font-size: 88px;
-            font-weight: 800;
-            font-variant-numeric: tabular-nums;
-            letter-spacing: -3px;
-            color: var(--text-primary);
-            line-height: 1;
-            transition: color 0.8s ease, text-shadow 0.8s ease;
+        .hero-row.state-heating { 
+            background: linear-gradient(90deg, rgba(255, 69, 58, 0.25) 0%, rgba(20, 20, 22, 0.95) 60%);
+            border-color: rgba(255, 69, 58, 0.4); 
+            box-shadow: 0 20px 60px rgba(255, 69, 58, 0.15), inset 0 2px 2px rgba(255, 255, 255, 0.1); 
         }
-
-        .hero-metric-label {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-tertiary);
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            margin-top: 8px;
-        }
+        .hero-row.state-heating .hero-row-icon { background: var(--apple-red); box-shadow: 0 0 20px var(--apple-red-glow); }
+        .hero-row.state-heating .hero-action-label { color: var(--apple-red); }
 
         /* ANIMATIONS */
         @keyframes breathe {
-
-            0%,
-            100% {
-                transform: scale(1);
-                box-shadow: inset 0 10px 20px rgba(255, 255, 255, 0.4), 0 0 20px rgba(151, 8, 204, 0.2);
-            }
-
-            50% {
-                transform: scale(1.03);
-                box-shadow: inset 0 10px 20px rgba(255, 255, 255, 0.4), 0 0 45px rgba(151, 8, 204, 0.5);
-            }
+            0%, 100% { transform: scale(1); box-shadow: inset 0 10px 20px rgba(255, 255, 255, 0.4), 0 0 20px rgba(151, 8, 204, 0.2); }
+            50% { transform: scale(1.03); box-shadow: inset 0 10px 20px rgba(255, 255, 255, 0.4), 0 0 45px rgba(151, 8, 204, 0.5); }
         }
-
         @keyframes pulse-listen {
-            0% {
-                transform: scale(1.05);
-            }
-
-            100% {
-                transform: scale(1.2);
-                box-shadow: inset 0 10px 20px rgba(255, 255, 255, 0.5), 0 0 90px rgba(48, 209, 88, 0.7);
-            }
+            0% { transform: scale(1.05); }
+            100% { transform: scale(1.2); box-shadow: inset 0 10px 20px rgba(255, 255, 255, 0.5), 0 0 90px rgba(48, 209, 88, 0.7); }
         }
-
         @keyframes spin-think {
-            0% {
-                transform: scale(1) rotate(0deg);
-            }
-
-            100% {
-                transform: scale(1) rotate(360deg);
-            }
+            0% { transform: scale(1) rotate(0deg); }
+            100% { transform: scale(1) rotate(360deg); }
         }
-
         @keyframes speak-wave {
-            0% {
-                transform: scale(1.05);
-                border-radius: 50%;
-            }
-
-            50% {
-                transform: scale(1.2);
-                border-radius: 35% 65% 65% 35% / 35% 35% 65% 65%;
-            }
-
-            100% {
-                transform: scale(1.1);
-                border-radius: 65% 35% 35% 65% / 65% 65% 35% 35%;
-            }
+            0% { transform: scale(1.05); border-radius: 50%; }
+            50% { transform: scale(1.2); border-radius: 35% 65% 65% 35% / 35% 35% 65% 65%; }
+            100% { transform: scale(1.1); border-radius: 65% 35% 35% 65% / 65% 65% 35% 35%; }
         }
-
         @keyframes ripple {
-            0% {
-                transform: scale(0.8);
-                opacity: 0.5;
-            }
-
-            100% {
-                transform: scale(1.6);
-                opacity: 0;
-            }
+            0% { transform: scale(0.8); opacity: 0.5; }
+            100% { transform: scale(1.6); opacity: 0; }
         }
-
         @keyframes blink {
-
-            0%,
-            100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.4;
-            }
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
         }
         
         /* --- NEW: THINKING ANIMATIONS --- */
         @keyframes think-wave {
-            0% {
-                transform: scale(0.98);
-                border-radius: 50%;
-                box-shadow: 0 0 20px rgba(255, 255, 255, 0.3), inset 0 0 10px #ffffff;
-            }
-
-            50% {
-                transform: scale(1.04);
-                border-radius: 35% 65% 65% 35% / 35% 35% 65% 65%;
-                box-shadow: 0 0 35px rgba(255, 255, 255, 0.6), inset 0 0 20px #ffffff;
-            }
-
-            100% {
-                transform: scale(1.01);
-                border-radius: 65% 35% 35% 65% / 65% 65% 35% 35%;
-                box-shadow: 0 0 50px rgba(255, 255, 255, 0.8), inset 0 0 30px #ffffff;
-            }
+            0% { transform: scale(0.98); border-radius: 50%; box-shadow: 0 0 20px rgba(255, 255, 255, 0.3), inset 0 0 10px #ffffff; }
+            50% { transform: scale(1.04); border-radius: 35% 65% 65% 35% / 35% 35% 65% 65%; box-shadow: 0 0 35px rgba(255, 255, 255, 0.6), inset 0 0 20px #ffffff; }
+            100% { transform: scale(1.01); border-radius: 65% 35% 35% 65% / 65% 65% 35% 35%; box-shadow: 0 0 50px rgba(255, 255, 255, 0.8), inset 0 0 30px #ffffff; }
         }
-
         @keyframes spin-nodes {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
-
         @keyframes spin-synthesis {
-            0% {
-                transform: rotate(0deg) scale(1);
-            }
-
-            50% {
-                transform: rotate(180deg) scale(1.05);
-                border-top-width: 5px;
-            }
-
-            100% {
-                transform: rotate(360deg) scale(1);
-            }
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.05); border-top-width: 5px; }
+            100% { transform: rotate(360deg) scale(1); }
         }
 
-        ::-webkit-scrollbar {
-            display: none;
-        }
+        ::-webkit-scrollbar { display: none; }
     </style>
 </head>
 
@@ -963,10 +842,7 @@
             <div class="vital-group"
                 style="margin-top: 24px; padding-top: 24px; padding-bottom: 32px; border-top: 1px solid rgba(255,255,255,0.06); border-bottom: 1px solid rgba(255,255,255,0.06);">
                 <div class="vital-row" style="align-items: center;">
-                    <!-- Reduced to 16px to act as a proper label -->
                     <span style="color: #FFFFFF; font-weight: 600; font-size: 16px;">Registered Devices</span>
-
-                    <!-- Increased to 32px to make the data the hero -->
                     <span style="color: #FFFFFF; font-weight: 800; font-size: 32px; line-height: 1;"
                         id="device-count">0</span>
                 </div>
@@ -1007,7 +883,6 @@
                     </div>
                 </div>
             </div>
-            <!-- END REGISTERED DEVICES SECTION -->
 
             <!-- ID added here for app.js to bind the connection -->
             <div class="orb-interaction-zone" id="orb-button">
@@ -1022,13 +897,10 @@
                     <span class="vital-label">Agent Status</span>
                     <span class="status-badge" id="socket-status">Offline</span>
                 </div>
-
-                <!-- NEW: End Conversation Button -->
                 <div class="end-btn-container" id="end-btn-container">
                     <button class="end-btn" id="end-btn">End Conversation</button>
                 </div>
             </div>
-
         </div>
 
         <!-- 2. RIGHT PANEL DATA LAYER -->
@@ -1038,29 +910,15 @@
                 <div class="ai-text" id="transcript-ai"></div>
             </div>
 
-            <!-- HERO OVERLAY (The Zoom Focus Mode) -->
-            <div id="hero-overlay">
-                <div class="hero-card" id="hero-card">
-                    <div class="hero-header">
-                        <div class="hero-icon-container" id="hero-icon">
-                            <!-- Icon injected via JS -->
-                        </div>
-                        <div class="hero-title-group">
-                            <span class="hero-name" id="hero-name">Air Conditioner</span>
-                            <span class="hero-room" id="hero-room">Living Room</span>
-                        </div>
-                    </div>
-                    <div class="hero-metric-container">
-                        <div class="hero-metric">
-                            <span id="hero-number">24</span><span
-                                style="font-size: 50px; vertical-align: top;">°C</span>
-                        </div>
-                        <div class="hero-metric-label">Target Temperature</div>
+            <div class="glass-panel" id="device-grid-container">
+                
+                <!-- NEW HERO STACK OVERLAY INJECTED HERE -->
+                <div id="hero-overlay">
+                    <div id="hero-stack">
+                        <!-- Dynamic Hero Rows will be injected here sequentially via JS -->
                     </div>
                 </div>
-            </div>
 
-            <div class="glass-panel" id="device-grid-container">
                 <div id="main-grid-wrapper">
                     <div class="grid-header">
                         <div class="grid-title">Environment Controls</div>
@@ -1098,14 +956,15 @@
             lock: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`
         };
 
-        let devicesData = []; // Will be populated by Firestore
+        // EXPORT TO WINDOW SO APP.JS CAN READ THE DEVICE DATA
+        window.devicesData = []; 
 
         // --- 3. RENDER LOGIC ---
         function renderDeviceGrid() {
             const grid = document.getElementById('device-grid');
             grid.innerHTML = '';
 
-            devicesData.forEach(device => {
+            window.devicesData.forEach(device => {
                 const isOn = device.state === 'on';
                 const deviceIcon = icons[device.deviceType] || ''; 
                 const metricText = `${device.settingLabel}: ${device.currentSettingValue}`;
@@ -1114,7 +973,6 @@
                     <div class="device-card ${isOn ? 'on' : 'off'}" id="${device.id}">
                         <div class="card-header">
                             <div class="icon-container">${deviceIcon}</div>
-                            <!-- NEW: Grouped ON/OFF status and Metric Pill -->
                             <div class="status-group">
                                 <div class="card-status-label">${isOn ? 'ON' : 'OFF'}</div>
                                 <div class="device-metric-pill">${metricText}</div>
@@ -1140,21 +998,16 @@
                 const data = docSnap.data();
                 if (data.devices) {
                     
-                    // 1. Convert the Firestore map into an array
-                    devicesData = Object.values(data.devices);
+                    window.devicesData = Object.values(data.devices);
+                    window.devicesData.sort((a, b) => a.id.localeCompare(b.id));
                     
-                    // 2. SORT BY DEVICE TYPE ALPHABETICALLY
-                    devicesData.sort((a, b) => a.id.localeCompare(b.id));
-                    
-                    // 3. TALLY SUB-COUNTS BY DEVICE TYPE
                     const typeCounts = { ac: 0, camera: 0, light: 0, lock: 0 };
-                    devicesData.forEach(device => {
+                    window.devicesData.forEach(device => {
                         if (typeCounts[device.deviceType] !== undefined) {
                             typeCounts[device.deviceType]++;
                         }
                     });
 
-                    // 4. UPDATE SUB-COUNT UI ELEMENTS
                     const countAcEl = document.getElementById('count-ac');
                     const countCameraEl = document.getElementById('count-camera');
                     const countLightEl = document.getElementById('count-light');
@@ -1165,20 +1018,17 @@
                     if(countLightEl) countLightEl.innerText = typeCounts.light;
                     if(countLockEl) countLockEl.innerText = typeCounts.lock;
 
-                    // 5. Re-render the main grid
                     renderDeviceGrid();
                     
-                    // Update the Total registered device count
                     const deviceCountEl = document.getElementById('device-count');
-                    if (deviceCountEl) deviceCountEl.innerText = devicesData.length;
+                    if (deviceCountEl) deviceCountEl.innerText = window.devicesData.length;
                 }
             } else {
                 console.warn("No such document found in Firestore!");
             }
         });
 
-        // --- 5. UI VISUAL EXPORTS (For app.js to trigger animations if needed) ---
-        // If app.js needs to control the Transcript or Agent State, attach them to window
+        // --- 5. UI VISUAL EXPORTS (For app.js to trigger animations) ---
         window.setAgentState = function(state) {
             const orbContainer = document.getElementById('orb-state');
             const micText = document.getElementById('mic-text');
@@ -1187,7 +1037,7 @@
                 orbContainer.classList.add(`state-${state.toLowerCase()}`);
             }
             if(micText) {
-                const textMap = { 'IDLE': 'Tap to Activate', 'LISTENING': 'Listening...', 'THINKING': 'Thinking...', 'SPEAKING': 'Tap to Interrupt' };
+                const textMap = { 'IDLE': 'Tap to Connect', 'LISTENING': 'Listening...', 'THINKING': 'Thinking...', 'SPEAKING': 'Tap to Interrupt' };
                 micText.innerText = textMap[state] || state;
             }
         };
@@ -1206,127 +1056,106 @@
             }
         };
 
-        function setAgentState(state) {
-            const orbContainer = document.getElementById('orb-state');
-            const micText = document.getElementById('mic-text');
-            orbContainer.className = 'orb-container';
-            orbContainer.classList.add(`state-${state.toLowerCase()}`);
+        // --- 6. DYNAMIC HERO STACK EXPORT ---
+        let heroDismissTimeout = null;
 
-            const textMap = { 'IDLE': 'Tap to Activate', 'LISTENING': 'Listening...', 'THINKING': 'Thinking...', 'SPEAKING': 'Tap to Interrupt' };
-            micText.innerText = textMap[state];
-        }
-
-        function updateTranscript(userText, aiText) {
-            const userEl = document.getElementById('transcript-user');
-            const aiEl = document.getElementById('transcript-ai');
-
-            if (userText !== null) {
-                userEl.classList.remove('visible');
-                setTimeout(() => { userEl.innerText = userText ? `"${userText}"` : ''; if (userText) userEl.classList.add('visible'); }, 400);
-            }
-            if (aiText !== null) {
-                aiEl.classList.remove('visible');
-                setTimeout(() => { aiEl.innerText = aiText; if (aiText) aiEl.classList.add('visible'); }, 400);
-            }
-        }
-        
-        /*
-        async function sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
-
-        async function triggerHeroAction(deviceData, startVal, targetVal) {
+        window.addDynamicHeroAction = function(eventPayload) {
             const overlay = document.getElementById('hero-overlay');
-            const heroCard = document.getElementById('hero-card');
+            const stack = document.getElementById('hero-stack');
             const gridWrapper = document.getElementById('main-grid-wrapper');
+            
+            if (!overlay.classList.contains('active')) {
+                overlay.classList.add('active');
+                gridWrapper.classList.add('grid-blurred');
+            }
 
-            document.getElementById('hero-icon').innerHTML = deviceData.icon;
-            document.getElementById('hero-name').innerText = deviceData.name;
-            document.getElementById('hero-room').innerText = deviceData.room;
-            document.getElementById('hero-number').innerText = startVal;
+            // Find device from Firebase data
+            const device = window.devicesData.find(d => d.id === eventPayload.id);
+            if (!device) return;
 
-            gridWrapper.classList.add('grid-blurred');
-            overlay.classList.add('active');
+            let actionClass = '';
+            let actionLabel = '';
+            let metricText = '';
+            
+            const deviceType = device.deviceType; // From Firebase structure
+            const newState = eventPayload.newState.toLowerCase();
+            const currentSetting = (eventPayload.currentSettingValue || '').toLowerCase();
 
-            await sleep(800);
+            if (newState === 'off') {
+                actionClass = 'state-off'; actionLabel = 'Turned Off'; metricText = 'Off'; 
+                if (deviceType === 'camera') actionLabel = 'Disabled';
+                if (deviceType === 'lock') actionLabel = 'Disengaged';
+            } else {
+                if (deviceType === 'ac') {
+                    const oldTemp = parseFloat(eventPayload.oldSettingValue);
+                    const newTemp = parseFloat(eventPayload.currentSettingValue);
 
-            // 1. Success Flash (Green)
-            heroCard.classList.add('hero-action-success');
-
-            if (startVal !== targetVal) {
-                let current = startVal;
-                const step = startVal > targetVal ? -1 : 1;
-                while (current !== targetVal) {
-                    current += step;
-                    document.getElementById('hero-number').innerText = current;
-                    await sleep(150);
+                    if (eventPayload.oldState === 'off') {
+                        actionClass = 'state-on'; actionLabel = 'Turned On'; metricText = `${newTemp}°`;
+                    } else if (newTemp < oldTemp) {
+                        actionClass = 'state-cooling'; actionLabel = 'Cooling'; metricText = `${newTemp}°`;
+                    } else if (newTemp > oldTemp) {
+                        actionClass = 'state-heating'; actionLabel = 'Heating'; metricText = `${newTemp}°`;
+                    } else {
+                        actionClass = 'state-on'; actionLabel = 'Updated'; metricText = `${newTemp}°`;
+                    }
+                } 
+                else if (deviceType === 'camera') {
+                    if (currentSetting === 'online') { actionClass = 'state-cooling'; actionLabel = 'Mode Set'; metricText = 'Online'; } 
+                    else if (currentSetting === 'private') { actionClass = 'state-heating'; actionLabel = 'Mode Set'; metricText = 'Private'; } 
+                    else if (currentSetting === 'protection') { actionClass = 'state-on'; actionLabel = 'Mode Set'; metricText = 'Protect'; } 
+                    else { actionClass = 'state-on'; actionLabel = 'Active'; metricText = 'On'; }
+                }
+                else if (deviceType === 'lock') {
+                    if (currentSetting === 'locked') { actionClass = 'state-cooling'; actionLabel = 'Secured'; metricText = 'Locked'; } 
+                    else if (currentSetting === 'unlocked') { actionClass = 'state-heating'; actionLabel = 'Unlocked'; metricText = 'Open'; } 
+                    else if (currentSetting === 'protection') { actionClass = 'state-on'; actionLabel = 'Mode Set'; metricText = 'Protect'; } 
+                    else { actionClass = 'state-on'; actionLabel = 'Secured'; metricText = 'Locked'; }
+                }
+                else if (deviceType === 'light') {
+                    if (currentSetting === 'cool') { actionClass = 'state-cooling'; actionLabel = 'Scene Set'; metricText = 'Cool'; } 
+                    else if (currentSetting === 'movie') { actionClass = 'state-heating'; actionLabel = 'Scene Set'; metricText = 'Movie'; } 
+                    else if (currentSetting === 'bright') { actionClass = 'state-on'; actionLabel = 'Scene Set'; metricText = 'Bright'; } 
+                    else { actionClass = 'state-on'; actionLabel = 'Turned On'; metricText = 'On'; }
                 }
             }
 
-            // The card now REMAINS in the Green Success State.
-            // We update the underlying grid silently so it's ready in Blue when the overlay fades.
-            const gridCard = document.getElementById(deviceData.id);
-            gridCard.classList.replace('off', 'on');
-            gridCard.querySelector('.card-status-label').innerText = 'ON';
-            gridCard.querySelector('.device-metric-pill').innerText = `Target: ${targetVal}°C`;
-        }
+            const fontSizeStyle = metricText.length > 6 ? 'font-size: 24px; letter-spacing: -0.5px;' : '';
+            const deviceIcon = icons[deviceType] || '';
 
-        async function hideHeroAction() {
-            const overlay = document.getElementById('hero-overlay');
-            const heroCard = document.getElementById('hero-card');
-            const gridWrapper = document.getElementById('main-grid-wrapper');
+            const rowEl = document.createElement('div');
+            rowEl.className = `hero-row ${actionClass}`;
+            rowEl.innerHTML = `
+                <div class="hero-row-icon">${deviceIcon}</div>
+                <div class="hero-row-info">
+                    <div class="hero-row-name">${device.deviceLabel}</div>
+                    <div class="hero-row-room">${device.room}</div>
+                </div>
+                <div class="hero-row-action">
+                    <div class="hero-action-label">${actionLabel}</div>
+                    <div class="hero-action-metric" style="${fontSizeStyle}">${metricText}</div>
+                </div>
+            `;
 
-            // Begin fading out and shrinking the overlay
-            overlay.classList.remove('active');
-            gridWrapper.classList.remove('grid-blurred');
+            stack.appendChild(rowEl);
+            
+            // Auto scroll to bottom smoothly
+            stack.scrollTo({
+                top: stack.scrollHeight,
+                behavior: 'smooth'
+            });
 
-            // Wait for the shrink/fade animation to completely finish before reverting the class
-            // This prevents the jarring "flash" to black while shrinking
-            setTimeout(() => {
-                heroCard.classList.remove('hero-action-success');
-            }, 600);
-        }
-
-        let isSimulating = false;
-
-        async function toggleSimulation() {
-            if (isSimulating) {
-                setAgentState('IDLE'); updateTranscript('Awaiting voice input...', '');
-                hideHeroAction(); isSimulating = false; return;
-            }
-
-            isSimulating = true;
-
-            setAgentState('LISTENING');
-            updateTranscript('Aris, turn on the Living Room AC to 20 degrees to beat the KL heat.', '');
-            await sleep(3000);
-            if (!isSimulating) return;
-
-            setAgentState('THINKING');
-            await sleep(1500);
-            if (!isSimulating) return;
-
-            const targetDevice = devicesData.find(d => d.id === 'ac-1');
-            triggerHeroAction(targetDevice, 24, 20);
-
-            await sleep(1000);
-
-            setAgentState('SPEAKING');
-            updateTranscript(null, 'Got it. I have turned on the Living Room Air Conditioner and set it to 20 degrees to cool things down.');
-            await sleep(4500);
-            if (!isSimulating) return;
-
-            hideHeroAction();
-            setAgentState('IDLE');
-            updateTranscript('Awaiting voice input...', '');
-            isSimulating = false;
-        }
-        */
+            if (heroDismissTimeout) clearTimeout(heroDismissTimeout);
+            heroDismissTimeout = setTimeout(() => {
+                overlay.classList.remove('active');
+                gridWrapper.classList.remove('grid-blurred');
+                setTimeout(() => { stack.innerHTML = ''; }, 600);
+            }, 3500); 
+        };
 
         window.onload = () => {
             renderDeviceGrid();
         };
     </script>
 </body>
-
 </html>
