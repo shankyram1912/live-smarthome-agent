@@ -61,7 +61,8 @@ def before_agent_callback_smart_home_devices(callback_context: CallbackContext):
 def before_model_callback_log_request(
     callback_context: CallbackContext, llm_request: LlmRequest
 ) -> Optional[LlmResponse]:
-    logger.info(f"[Inspecting LLM Request System Instruction - {llm_request.config.system_instruction}]")
+    # logger.info(f"[Inspecting LLM Request System Instruction - {llm_request.config.system_instruction}]")
+    logger.info(f"[Inspecting LLM Request System Instruction]")
     return None
 
 # * When 'control_checkcamera' returns an image and metadata, use BOTH to describe the scene naturally. Example: "Grandmother and a delivery driver are at the front door."

@@ -75,8 +75,6 @@ class Tools:
                     "state": data.get("state", "off"),
                     "currentSettingValue": data.get("currentSettingValue", "")
                 })
-
-            logger.info(f"[@@@ DEVICE CONFIG] {smart_device_list}")
             
             return smart_device_list
         except Exception as e:
