@@ -173,11 +173,11 @@ class Tools:
                 "oldSettingValue": oldSettingValue,
                 "currentSettingValue": finalSettingValue
             }
-            return json.dumps(response_dict)
+            return response_dict
             
         except Exception as e:
             logger.error(f"Failed to update AC {id}: {str(e)}")
-            return json.dumps({"error": f"Database update failed: {str(e)}"})
+            return {"error": f"Database update failed: {str(e)}"}
         
     def control_camera(
         self, id: str, 
@@ -261,8 +261,8 @@ class Tools:
                 "oldSettingValue": oldSettingValue,
                 "currentSettingValue": finalSettingValue
             }
-            return json.dumps(response_dict)
+            return response_dict
             
         except Exception as e:
             logger.error(f"Failed to update camera {id}: {str(e)}")
-            return json.dumps({"error": f"Database update failed: {str(e)}"})
+            return {"error": f"Database update failed: {str(e)}"}
