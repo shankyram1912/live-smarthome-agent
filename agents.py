@@ -124,5 +124,5 @@ aris_agent = LlmAgent(
     name="Aris",
     model=config.ORCHESTRATOR_MODEL,
     instruction=ARIS_INSTRUCTIONS,
-    tools=[toolInstance.get_smart_home_devices_info, toolInstance.control_airconditioner, toolInstance.control_camera]  # Wrapper tools for subagents
+    tools=[toolInstance.get_smart_home_devices_info, toolInstance.control_airconditioner, toolInstance.control_camera, toolInstance.control_light, toolInstance.control_lock]  # Wrapper tools for subagents
 )
