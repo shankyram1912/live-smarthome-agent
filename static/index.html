@@ -236,6 +236,11 @@
             flex-direction: column;
             overflow: hidden;
             position: relative;
+            /* CHROME FIX: isolate stacking context so nested backdrop-filter children
+               (e.g. frosted device cards over room photos) render against their own
+               background, not against the parent panel's backdrop blur. */
+            isolation: isolate;
+            transform: translateZ(0);
         }
 
         /* PANEL 1: AI CORE */
@@ -854,50 +859,75 @@
             gap: 32px;
         }
 
+        /* ROOM VIEW: the room photo IS the container — cards float inside it */
         .room-group {
+            position: relative;
             display: flex;
             flex-direction: column;
             gap: 16px;
-            animation: slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
-        .room-banner {
-            width: 100%;
-            height: 120px;
-            border-radius: 24px;
-            position: relative;
+            padding: 88px 28px 28px;
+            min-height: 340px;
+            border-radius: 28px;
             overflow: hidden;
-            display: flex;
-            align-items: flex-end;
-            padding: 24px;
             background-color: rgba(20, 20, 22, 0.8);
             background-size: cover;
             background-position: center;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.15);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55), inset 0 1px 2px rgba(255, 255, 255, 0.12);
             border: 1px solid rgba(255, 255, 255, 0.08);
+            /* CHROME FIX: own stacking context for nested frosted cards */
+            isolation: isolate;
+            transform: translateZ(0);
+            animation: slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
-        .room-banner::before {
+        .room-group::before {
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.1) 100%);
+            background: linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.15) 35%, rgba(0,0,0,0.55) 100%);
+            z-index: 0;
         }
 
-        .room-banner-title {
-            position: relative;
-            z-index: 1;
-            font-size: 24px;
+        .room-label {
+            position: absolute;
+            top: 28px;
+            left: 32px;
+            z-index: 2;
+            font-size: 28px;
             font-weight: 700;
+            letter-spacing: -0.6px;
             color: #FFF;
-            letter-spacing: -0.5px;
-            text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+            text-shadow: 0 2px 20px rgba(0, 0, 0, 0.6);
         }
 
         .room-grid {
+            position: relative;
+            z-index: 1;
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 16px;
+            /* auto-fill so empty tracks stay empty — cards don't stretch to fill width.
+               Match the 180px min and 150px height of the device-view grid exactly. */
+            grid-template-columns: repeat(auto-fill, minmax(180px, 200px));
+            gap: 14px;
+        }
+
+        /* FROSTED CARDS sit on the room photo — same dimensions as device view */
+        .room-group .device-card {
+            height: 150px;
+            background: rgba(18, 18, 20, 0.55);
+            backdrop-filter: blur(24px) saturate(1.4);
+            -webkit-backdrop-filter: blur(24px) saturate(1.4);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), inset 0 1px 2px rgba(255, 255, 255, 0.12);
+        }
+
+        .room-group .device-card.on {
+            background: rgba(10, 132, 255, 0.22);
+            backdrop-filter: blur(24px) saturate(1.4);
+            -webkit-backdrop-filter: blur(24px) saturate(1.4);
+            border-color: rgba(10, 132, 255, 0.45);
+            box-shadow: 0 12px 40px rgba(10, 132, 255, 0.3),
+                        inset 0 1px 2px rgba(255, 255, 255, 0.3),
+                        inset 0 0 20px rgba(10, 132, 255, 0.15);
         }
 
         /* --- DYNAMIC HERO STACK OVERLAY --- */
@@ -1317,10 +1347,11 @@
             renderDeviceGrid();
         };
 
-        function generateCardHTML(device) {
+        function generateCardHTML(device, hideRoom = false) {
             const isOn = device.state === 'on';
             const deviceIcon = icons[device.deviceType] || ''; 
             const metricText = `${device.settingLabel}: ${device.currentSettingValue}`;
+            const roomLine = hideRoom ? '' : `<span class="room-name">${device.room}</span>`;
 
             return `
                 <div class="device-card ${isOn ? 'on' : 'off'}" id="${device.id}">
@@ -1334,7 +1365,7 @@
                     <div class="card-footer">
                         <div class="card-info">
                             <span class="device-name">${device.deviceLabel}</span>
-                            <span class="room-name">${device.room}</span>
+                            ${roomLine}
                         </div>
                     </div>
                 </div>
@@ -1359,14 +1390,14 @@
                 for (const [roomName, devices] of Object.entries(groupedByRoom)) {
                     const bgUrl = roomImages[roomName] || roomImages['Default'];
                     
+                    // Cards with hideRoom=true since the room container already labels it
                     let cardsHtml = '';
-                    devices.forEach(device => { cardsHtml += generateCardHTML(device); });
+                    devices.forEach(device => { cardsHtml += generateCardHTML(device, true); });
 
+                    // Room photo IS the container — cards float inside it as frosted glass
                     const roomHtml = `
-                        <div class="room-group">
-                            <div class="room-banner" style="background-image: url('${bgUrl}');">
-                                <div class="room-banner-title">${roomName}</div>
-                            </div>
+                        <div class="room-group" style="background-image: url('${bgUrl}');">
+                            <div class="room-label">${roomName}</div>
                             <div class="room-grid">
                                 ${cardsHtml}
                             </div>
