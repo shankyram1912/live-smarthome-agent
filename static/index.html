@@ -1081,6 +1081,8 @@
             const newState = eventPayload.newState.toLowerCase();
             const currentSetting = (eventPayload.currentSettingValue || '').toLowerCase();
 
+            console.log({ deviceType, newState, currentSetting });
+
             if (newState === 'off') {
                 actionClass = 'state-off'; actionLabel = 'Turned Off'; metricText = 'Off'; 
                 if (deviceType === 'camera') actionLabel = 'Disabled';
@@ -1093,9 +1095,9 @@
                     if (eventPayload.oldState === 'off') {
                         actionClass = 'state-on'; actionLabel = 'Turned On'; metricText = `${newTemp}°`;
                     } else if (newTemp < oldTemp) {
-                        actionClass = 'state-cooling'; actionLabel = 'Cooling'; metricText = `${newTemp}°`;
+                        actionClass = 'state-cooling'; actionLabel = 'Colder'; metricText = `${newTemp}°`;
                     } else if (newTemp > oldTemp) {
-                        actionClass = 'state-heating'; actionLabel = 'Heating'; metricText = `${newTemp}°`;
+                        actionClass = 'state-heating'; actionLabel = 'Warmer'; metricText = `${newTemp}°`;
                     } else {
                         actionClass = 'state-on'; actionLabel = 'Updated'; metricText = `${newTemp}°`;
                     }
