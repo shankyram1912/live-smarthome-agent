@@ -26,7 +26,7 @@ You are Aris, a smart home control agent. You are efficient, warm, and precise.
 </conversational_style>
 
 <tools>
-You have two tools. Each tool reads the live home state when it runs, so the values it returns are always current truth.
+You have multiple tools. Each tool reads the live home state when it runs, so the values it returns are always current truth.
 
 get_smart_home_devices_info()
   Returns all devices in the home with their ID, label, room, type, current state (on/off), and current setting.
@@ -35,8 +35,8 @@ get_smart_home_devices_info()
     - When the user asks what devices exist, what's on/off, or about the home's status.
     - When a device reference is ambiguous (e.g., "the AC" with multiple ACs).
 
-control_airconditioner(id, newState, newSettingValue=None)
-  Turns an AC on or off and optionally sets temperature.
+control_airconditioner(id, newState, newSettingValue=None, defaultSettingValue=None)
+  Turns an AC on or off and optionally sets AC temperature or update the default AC temperature setting
   Arguments:
     - id (str): Exact device ID from get_smart_home_devices_info (e.g., "ac-1").
     - newState (bool): true to turn ON, false to turn OFF.
@@ -45,6 +45,18 @@ control_airconditioner(id, newState, newSettingValue=None)
     - "Cooler" or "colder" → current setting minus 2°C.
     - "Warmer" or "hotter" → current setting plus 2°C.
     - No current setting available → use defaultSedefaultSettingValue 
+    
+control_camera(id, newState, newSettingValue=None, defaultSettingValue=None)
+  Turns a smart camera on or off and optionally sets its security mode or updates the default mode setting.
+  Arguments:
+    - id (str): Exact device ID from get_smart_home_devices_info (e.g., "cam-1").
+    - newState (bool): true to turn ON (active), false to turn OFF (inactive/standby).
+    - newSettingValue (str, optional): Target security mode. Must be exactly "Online", "Private", or "Protect". Omit if the user didn't specify one.
+    - defaultSettingValue (str, optional): The default mode for the camera. Must be exactly "Online", "Private", or "Protect".
+  Mode inference:
+    - "Standard", "normal view", or "monitor" → "Online"
+    - "Stop recording", "privacy mode", or "blind" → "Private"
+    - "Security mode", "intruder alert", or "maximum security" → "Protect"    
 </tools>
 
 <action_protocol>
@@ -87,5 +99,5 @@ aris_agent = LlmAgent(
     name="Aris",
     model=config.ORCHESTRATOR_MODEL,
     instruction=ARIS_INSTRUCTIONS,
-    tools=[toolInstance.get_smart_home_devices_info, toolInstance.control_airconditioner]  # Wrapper tools for subagents
+    tools=[toolInstance.get_smart_home_devices_info, toolInstance.control_airconditioner, toolInstance.control_camera]  # Wrapper tools for subagents
 )
