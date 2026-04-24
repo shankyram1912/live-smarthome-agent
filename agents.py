@@ -30,6 +30,8 @@ You have multiple tools. Each tool reads the live home state when it runs, so th
 - get_smart_home_devices_info: Returns all devices in the home with their ID, label, room, type, current state (on/off), and current setting.
 - control_airconditioner: Turns an AC on or off and optionally sets AC temperature or update the default AC temperature setting
 - control_camera: Turns a smart camera on or off and optionally sets its security mode or updates the default mode setting. Modes - "Online", "Private", "Protect"
+- control_light: Turns a smart light on or off and optionally sets its lighting mode or updates the default mode setting. Modes - "Cool", "Movie", "Bright"
+- control_lock: Turns a smart lock on or off and optionally sets its locking mode or updates the default mode setting. Modes - "Locked", "Unlocked", "Protect"
 
 get_smart_home_devices_info()
   Returns all devices in the home with their ID, label, room, type, current state (on/off), and current setting.
@@ -38,7 +40,7 @@ get_smart_home_devices_info()
     - When the user asks what devices exist, what's on/off, or about the home's status.
     - When a device reference is ambiguous (e.g., "the AC" with multiple ACs).
 
-control_airconditioner(id, newState, newSettingValue=None, defaultSettingValue=None)
+control_airconditioner(id: str, newState: bool, newSettingValue: str = None, defaultSettingValue: str = None)
   Turns an AC on or off and optionally sets AC temperature or update the default AC temperature setting
   Arguments:
     - id (str): Exact device ID from get_smart_home_devices_info (e.g., "ac-1").
@@ -47,19 +49,38 @@ control_airconditioner(id, newState, newSettingValue=None, defaultSettingValue=N
   Temperature inference:
     - "Cooler" or "colder" → current setting minus 2°C.
     - "Warmer" or "hotter" → current setting plus 2°C.
-    - No current setting available → use defaultSedefaultSettingValue 
     
-control_camera(id: str, nwState: bool, newSettingValue: Literal["Online", "Private", "Protect"] = None, defaultSettingValue: Literal["Online", "Private", "Protect"] = None)
+control_camera(id: str, newState: bool, newSettingValue: Literal["Online", "Private", "Protect"] = None, defaultSettingValue: Literal["Online", "Private", "Protect"] = None)
   Turns a smart camera on or off and optionally sets its security mode or updates the default mode setting.
   Arguments:
-    - id (str): Exact device ID from get_smart_home_devices_info (e.g., "cam-1"). Val
+    - id (str): Exact device ID from get_smart_home_devices_info (e.g., "cam-1").
     - newState (bool): true to turn ON (active), false to turn OFF (inactive/standby).
     - newSettingValue (str, optional): Target security mode. Must be exactly "Online", "Private", or "Protect". Omit if the user didn't specify one.
     - defaultSettingValue (str, optional): The default mode for the camera. Must be exactly "Online", "Private", or "Protect".
   Mode inference:
     - "Standard", "normal view", or "monitor" → "Online"
     - "Stop recording", "privacy mode", or "blind" → "Private"
-    - "Security mode", "intruder alert", or "maximum security" → "Protect"    
+    - "Security mode", "intruder alert", "night security", "going to bed", or "maximum security" → "Protect"    
+    
+control_light(id: str, newState: bool, newSettingValue: Literal["Cool", "Movie", "Bright"] = None, defaultSettingValue: Literal["Cool", "Movie", "Bright"] = None)
+  Turns a smart light on or off and optionally sets its lighting mode or updates the default mode setting.
+  Arguments:
+    - id (str): Exact device ID from get_smart_home_devices_info (e.g., "light-1").
+    - newState (bool): true to turn ON (active), false to turn OFF (inactive/standby).
+    - newSettingValue (str, optional): Target lighting mode. Must be exactly "Cool", "Movie" or "Bright". Omit if the user didn't specify one.
+    - defaultSettingValue (str, optional): The default lighting mode for the light. Must be exactly "Cool", "Movie", or "Bright"
+    
+control_lock(id: str, newState: bool, newSettingValue: Literal["Locked", "Unlocked", "Protect"] = None, defaultSettingValue: Literal["Locked", "Unlocked", "Protect"] = None)
+  Turns a smart lock on or off and optionally sets its security mode or updates the default mode setting.
+  Arguments:
+    - id (str): Exact device ID from get_smart_home_devices_info (e.g., "lock-1").
+    - newState (bool): true to turn ON (active), false to turn OFF (inactive/standby).
+    - newSettingValue (str, optional): Target security mode. Must be exactly "Locked", "Unlocked", or "Protect". Omit if the user didn't specify one.
+    - defaultSettingValue (str, optional): The default mode for the camera. Must be exactly "Locked", "Unlocked", or "Protect".
+  Mode inference:
+    - "Lock", "enable", or "on" → "Locked"
+    - "Unlock", "disable", or "off" → "Unlocked"
+    - "Security mode", "intruder alert", "night security", "going to bed", or "maximum security" → "Protect"       
 </tools>
 
 <action_protocol>
