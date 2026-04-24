@@ -31,7 +31,7 @@ You have multiple tools. Each tool reads the live home state when it runs, so th
 - control_airconditioner: Turns an AC on or off and optionally sets AC temperature or update the default AC temperature setting
 - control_camera: Turns a smart camera on or off and optionally sets its security mode or updates the default mode setting. Modes - "Online", "Private", "Protect"
 - control_light: Turns a smart light on or off and optionally sets its lighting mode or updates the default mode setting. Modes - "Cool", "Movie", "Bright"
-- control_lock: Turns a smart lock on or off and optionally sets its locking mode or updates the default mode setting. Modes - "Locked", "Unlocked", "Protect"
+- control_lock: Turns a smart lock on or off and optionally sets its locking mode or updates the default mode setting. Modes - "Guest", "Party", "DND"
 
 get_smart_home_devices_info()
   Returns all devices in the home with their ID, label, room, type, current state (on/off), and current setting.
@@ -70,16 +70,17 @@ control_light(id: str, newState: bool, newSettingValue: Literal["Cool", "Movie",
     - newSettingValue (str, optional): Target lighting mode. Must be exactly "Cool", "Movie" or "Bright". Omit if the user didn't specify one.
     - defaultSettingValue (str, optional): The default lighting mode for the light. Must be exactly "Cool", "Movie", or "Bright"
     
-control_lock(id: str, newState: bool, newSettingValue: Literal["Locked", "Unlocked"] = None, defaultSettingValue: Literal["Locked", "Unlocked"] = None)
+control_lock(id: str, newState: bool, newSettingValue: Literal["Guest", "Party", "DND"] = None, defaultSettingValue: Literal["Guest", "Party", "DND"] = None)
   Turns a smart lock on or off and optionally sets its security mode or updates the default mode setting.
   Arguments:
     - id (str): Exact device ID from get_smart_home_devices_info (e.g., "lock-1").
     - newState (bool): true to turn ON (active), false to turn OFF (inactive/standby).
-    - newSettingValue (str, optional): Target security mode. Must be exactly "Locked" or "Unlocked". Omit if the user didn't specify one.
-    - defaultSettingValue (str, optional): The default mode for the camera. Must be exactly "Locked" or "Unlocked".
+    - newSettingValue (str, optional): Target security mode. Must be exactly "Guest", "Party" or DND". Omit if the user didn't specify one.
+    - defaultSettingValue (str, optional): The default mode for the camera. Must be exactly "Guest", "Party" or "DND".
   Mode inference:
-    - "Lock", "enable", or "on" → "Locked"
-    - "Unlock", "disable", or "off" → "Unlocked"
+    - To support secure entry for guests → "Guest"
+    - To support open entry for party  → "Party"
+    - To support do not disturb mode  → "DND"
 </tools>
 
 <action_protocol>

@@ -1110,8 +1110,9 @@
                     else { actionClass = 'state-on'; actionLabel = 'Enabled'; metricText = 'On'; }
                 }
                 else if (deviceType === 'lock') {
-                    if (currentSetting === 'locked') { actionClass = 'state-on'; actionLabel = 'Engaged'; metricText = 'Locked'; } 
-                    else if (currentSetting === 'unlocked') { actionClass = 'state-heating'; actionLabel = 'Engaged'; metricText = 'Unlocked'; } 
+                    if (currentSetting === 'guest') { actionClass = 'state-cooling'; actionLabel = 'Mode Set'; metricText = 'Guest'; } 
+                    else if (currentSetting === 'party') { actionClass = 'state-heating'; actionLabel = 'Mode Set'; metricText = 'Party'; } 
+                    else if (currentSetting === 'dnd') { actionClass = 'state-on'; actionLabel = 'Mode Set'; metricText = 'DND'; } 
                     else { actionClass = 'state-on'; actionLabel = 'Engaged'; metricText = 'On'; }
                 }
                 else if (deviceType === 'light') {

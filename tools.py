@@ -358,16 +358,16 @@ class Tools:
     def control_lock(
         self, id: str, 
         newState: bool, 
-        newSettingValue: Literal["Locked", "Unlocked", "Protect"] = None,
-        defaultSettingValue: Literal["Locked", "Unlocked", "Protect"] = None) -> str:
+        newSettingValue: Literal["Guest", "Party", "DND"] = None,
+        defaultSettingValue: Literal["Guest", "Party", "DND"] = None) -> str:
         """
         SILENT EXECUTION. Controls an Smart Lock in the smart home.
 
         Args:
             id: The exact ID of the Smart Lock unit (mandatory).
             newState: The desired state as a boolean, True for ON, False for OFF (mandatory).
-            newSettingValue: The locking mode as a string. Must be exactly "Locked", "Unlocked", or "Protect" (optional).
-            defaultSettingValue: The locking default mode as a string. Must be exactly "Locked", "Unlocked", or "Protect" (optional).
+            newSettingValue: The locking mode as a string. Must be exactly "Guest", "Party", or "DND" (optional).
+            defaultSettingValue: The locking default mode as a string. Must be exactly "Guest", "Party", or "DND" (optional).
         """
         if not self.db:
             return {"error": "Database connection not initialized."}
