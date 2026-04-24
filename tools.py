@@ -352,96 +352,8 @@ class Tools:
             return response_dict
             
         except Exception as e:
-            logger.error(f"Failed to update camera {id}: {str(e)}")
+            logger.error(f"Failed to update light {id}: {str(e)}")
             return {"error": f"Database update failed: {str(e)}"}        
-        
-    def control_camera(
-        self, id: str, 
-        newState: bool, 
-        newSettingValue: Literal["Online", "Private", "Protect"] = None,
-        defaultSettingValue: Literal["Online", "Private", "Protect"] = None) -> str:
-        """
-        SILENT EXECUTION. Controls an Smart Camera in the smart home.
-
-        Args:
-            id: The exact ID of the Smart camera unit (mandatory).
-            newState: The desired state as a boolean, True for ON, False for OFF (mandatory).
-            newSettingValue: The camera's security mode as a string. Must be exactly "Online", "Private", or "Protect" (optional).
-            defaultSettingValue: The camera's default security mode as a string. Must be exactly "Online", "Private", or "Protect" (optional).
-        """
-        if not self.db:
-            return {"error": "Database connection not initialized."}
-
-        # Evaluate the boolean against the Enum
-        target_state_str = DeviceState.ON.value if newState else DeviceState.OFF.value
-
-        # Log tool calls
-        print("\n" + "="*50)
-        print(f"[🔧 TOOL EXECUTION] control_camera(id={id}, newState={newState} -> '{target_state_str}', newSettingValue={newSettingValue})")
-        print("="*50 + "\n", flush=True)   
-        logger.info(f"[🔧 TOOL EXECUTION] control_camera(id={id}, newState={newState} -> '{target_state_str}', newSettingValue={newSettingValue})")
-
-        # Cache check using the instance dictionary
-        cache_key = f"{id}_{target_state_str}_{newSettingValue}"
-        current_time = time.time()
-        
-        with self._lock: 
-            if cache_key in self._action_cache and (current_time - self._action_cache[cache_key]) < 5:
-                return {"status": "IGNORED_DUPLICATE_CALL"}
-            self._action_cache[cache_key] = current_time
-
-        try:
-            doc_ref = self.db.collection("home-users").document("default")
-            doc = doc_ref.get()
-            
-            if not doc.exists:
-                return {"error": "User document not found."}
-                
-            devices = doc.to_dict().get("devices", {})
-
-            if id not in devices:
-                return {"error": f"Device {id} not found."}
-
-            device = devices[id]
-            oldState = device.get("state", "unknown")
-            oldSettingValue = device.get("currentSettingValue", "unknown")
-            
-            # Use defaultSettingValue from DB if newSettingValue is None and defaultSettingValue is None
-            if newSettingValue is not None:
-                finalSettingValue = newSettingValue
-            else:
-                if(defaultSettingValue is not None):
-                    finalSettingValue = defaultSettingValue
-                else:
-                    finalSettingValue = device.get("defaultSettingValue", oldSettingValue) 
-
-            # Update Firestore
-            if(defaultSettingValue is None):
-                doc_ref.update({
-                    f"devices.{id}.state": target_state_str,
-                    f"devices.{id}.currentSettingValue": finalSettingValue
-                })
-            else:
-                doc_ref.update({
-                    f"devices.{id}.state": target_state_str,
-                    f"devices.{id}.currentSettingValue": finalSettingValue,
-                    f"devices.{id}.defaultSettingValue": defaultSettingValue
-                })                                
-
-            response_dict = {
-                "id": id,
-                "deviceLabel": device.get("deviceLabel"),
-                "room": device.get("room"),
-                "oldState": oldState,
-                "newState": target_state_str,
-                "oldSettingValue": oldSettingValue,
-                "currentSettingValue": finalSettingValue
-            }
-            return response_dict
-            
-        except Exception as e:
-            logger.error(f"Failed to update camera {id}: {str(e)}")
-            return {"error": f"Database update failed: {str(e)}"}
         
     def control_lock(
         self, id: str, 
@@ -528,5 +440,5 @@ class Tools:
             return response_dict
             
         except Exception as e:
-            logger.error(f"Failed to update camera {id}: {str(e)}")
+            logger.error(f"Failed to update lock {id}: {str(e)}")
             return {"error": f"Database update failed: {str(e)}"}         
