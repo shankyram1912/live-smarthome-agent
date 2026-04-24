@@ -1078,10 +1078,11 @@
             let metricText = '';
             
             const deviceType = device.deviceType; // From Firebase structure
+            const oldState = eventPayload.oldState.toLowerCase();
             const newState = eventPayload.newState.toLowerCase();
             const currentSetting = (eventPayload.currentSettingValue || '').toLowerCase();
 
-            console.log({ deviceType, newState, currentSetting });
+            console.log({ deviceType, oldState, newState, currentSetting });
 
             if (newState === 'off') {
                 actionClass = 'state-off'; actionLabel = 'Turned Off'; metricText = 'Off'; 
