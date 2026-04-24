@@ -1107,9 +1107,8 @@
                     else { actionClass = 'state-on'; actionLabel = 'Active'; metricText = 'On'; }
                 }
                 else if (deviceType === 'lock') {
-                    if (currentSetting === 'locked') { actionClass = 'state-cooling'; actionLabel = 'Secured'; metricText = 'Locked'; } 
+                    if (currentSetting === 'locked') { actionClass = 'state-on'; actionLabel = 'Secured'; metricText = 'Locked'; } 
                     else if (currentSetting === 'unlocked') { actionClass = 'state-heating'; actionLabel = 'Unlocked'; metricText = 'Open'; } 
-                    else if (currentSetting === 'protection') { actionClass = 'state-on'; actionLabel = 'Mode Set'; metricText = 'Protect'; } 
                     else { actionClass = 'state-on'; actionLabel = 'Secured'; metricText = 'Locked'; }
                 }
                 else if (deviceType === 'light') {
