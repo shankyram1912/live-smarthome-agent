@@ -1107,12 +1107,12 @@
                     if (currentSetting === 'online') { actionClass = 'state-cooling'; actionLabel = 'Mode Set'; metricText = 'Online'; } 
                     else if (currentSetting === 'private') { actionClass = 'state-heating'; actionLabel = 'Mode Set'; metricText = 'Private'; } 
                     else if (currentSetting === 'protect') { actionClass = 'state-on'; actionLabel = 'Mode Set'; metricText = 'Protect'; } 
-                    else { actionClass = 'state-on'; actionLabel = 'Active'; metricText = 'On'; }
+                    else { actionClass = 'state-on'; actionLabel = 'Enabled'; metricText = 'On'; }
                 }
                 else if (deviceType === 'lock') {
-                    if (currentSetting === 'locked') { actionClass = 'state-on'; actionLabel = 'Secured'; metricText = 'Locked'; } 
-                    else if (currentSetting === 'unlocked') { actionClass = 'state-heating'; actionLabel = 'Unlocked'; metricText = 'Open'; } 
-                    else { actionClass = 'state-on'; actionLabel = 'Secured'; metricText = 'Locked'; }
+                    if (currentSetting === 'locked') { actionClass = 'state-on'; actionLabel = 'Engaged'; metricText = 'Locked'; } 
+                    else if (currentSetting === 'unlocked') { actionClass = 'state-heating'; actionLabel = 'Engaged'; metricText = 'Unlocked'; } 
+                    else { actionClass = 'state-on'; actionLabel = 'Engaged'; metricText = 'On'; }
                 }
                 else if (deviceType === 'light') {
                     if (currentSetting === 'cool') { actionClass = 'state-cooling'; actionLabel = 'Scene Set'; metricText = 'Cool'; } 
