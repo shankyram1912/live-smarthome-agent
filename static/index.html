@@ -570,9 +570,9 @@
         }        
 
         .chat-container.visible {
-            flex-grow: 1; /* The Magic: Tells it to consume all empty vertical space! */
-            margin-top: 20px;
-            margin-bottom: 8px; /* Breathing room before the status line */
+            flex-grow: 1; /* Consumes all empty vertical space, pushing the End button down! */
+            margin-top: 24px;
+            margin-bottom: 16px; 
             opacity: 1;
             pointer-events: auto;
         }
@@ -583,12 +583,12 @@
             background: rgba(0, 0, 0, 0.2); 
             border: none; 
             border-radius: 20px; 
-            /* Top aligned padding: 16px top, 52px right (leaves room for button), 16px bottom */
-            padding: 16px 52px 16px 16px; 
+            /* 52px bottom padding ensures text wraps above the bottom-right button */
+            padding: 16px 16px 52px 16px; 
             color: #FFF;
             font-size: 14px; 
             font-weight: 500;
-            line-height: 1.4; /* Forces clean text alignment at the top */
+            line-height: 1.4; 
             outline: none;
             resize: none; 
             font-family: inherit; 
@@ -613,25 +613,36 @@
         .chat-send-btn {
             position: absolute;
             right: 12px;
-            top: 12px; /* Moved from bottom to top alignment */
+            bottom: 12px; /* Docked cleanly to the bottom right */
+            top: auto; 
             width: 36px; 
             height: 36px;
             border-radius: 50%;
-            /* Upgraded to an 'Apple Intelligence' style gradient */
-            background: linear-gradient(135deg, #43CBFF 0%, #BF5AF2 100%);
+            background: #FFFFFF; /* Pure White Circle */
+            color: #000000;      /* Pure Black Arrow */
             border: none;
-            color: #FFF;
             display: flex;
             justify-content: center;
             align-items: center;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(191, 90, 242, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.8);
             transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .chat-send-btn:hover { transform: scale(1.05); background: #3291FF; }
-        .chat-send-btn:active { transform: scale(0.95); }
-        .chat-send-btn svg { width: 16px; height: 16px; stroke-width: 2.5px; }
+        .chat-send-btn:hover { 
+            transform: scale(1.05); 
+            background: #F5F5F7; 
+        }
+        
+        .chat-send-btn:active { 
+            transform: scale(0.95); 
+        }
+        
+        .chat-send-btn svg { 
+            width: 18px; 
+            height: 18px; 
+            stroke-width: 2.5px; 
+        }        
 
         /* --- ROW LAYOUT --- */
         .vital-row {
@@ -1354,22 +1365,19 @@
                 <div class="orb-container state-idle" id="orb-state">
                     <div class="orb"></div>
                 </div>
-                <div class="mic-instruction" id="mic-text">Tap to Connect</div>
-                <div class="chat-container" id="chat-container">
-                    <input type="text" class="chat-input" id="chat-input" placeholder="Message Aris...">
-                    <button class="chat-send-btn" id="chat-send-btn">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="12" y1="19" x2="12" y2="5"></line>
-                            <polyline points="5 12 12 5 19 12"></polyline>
-                        </svg>
-                    </button>
-                </div>                            
+                <div class="mic-instruction" id="mic-text">Tap to Connect</div>                           
             </div>
 
-            <div class="end-btn-container" id="end-btn-container">
-                <button class="end-btn" id="end-btn">End Conversation</button>
-            </div>                
-
+            <div class="chat-container" id="chat-container">
+                <textarea class="chat-input" id="chat-input" placeholder="Message Aris..."></textarea>
+                <button class="chat-send-btn" id="chat-send-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="19" x2="12" y2="5"></line>
+                        <polyline points="5 12 12 5 19 12"></polyline>
+                    </svg>
+                </button>
+            </div>            
+                
             <div class="system-vitals">
                 <div class="vital-row">
                     <div style="display: flex; align-items: center; gap: 10px;">
