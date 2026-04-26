@@ -520,6 +520,8 @@
             display: flex;
             justify-content: center;
             margin-top: 8px;
+            margin-bottom: 16px; /* Keeps it away from the line */
+            flex-shrink: 0;      /* Prevents it from getting squished */
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s ease;
