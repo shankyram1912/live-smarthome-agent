@@ -1912,8 +1912,12 @@
 
             // 1. If it's the YAML response, use it raw
             if (toolName === 'get_smart_home_devices_info' && !isRequest) {
-                payloadString = typeof payload === 'string' ? payload : JSON.stringify(payload, null, 2);
-            } 
+                if (payload && typeof payload === 'object' && payload.result) {
+                    payloadString = payload.result; // Extracts the raw YAML string directly
+                } else {
+                    payloadString = typeof payload === 'string' ? payload.replace(/\\n/g, '\n') : JSON.stringify(payload, null, 2);
+                }
+            }
             // 2. Otherwise, treat as JSON and pretty-print
             else {
                 try {
