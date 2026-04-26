@@ -476,15 +476,104 @@
     // ── Default constant ──────────────────────────────────────────────────────
     const initialData = {
         devices: {
-            "ac-1":    { "id": "ac-1",    "deviceType": "ac",     "deviceLabel": "Air Conditioner", "room": "Living Room",   "state": "off", "olderSettingValue": "24",       "currentSettingValue": "24",       "defaultSettingValue": "24",     "settingLabel": "Temp (°C)" },
-            "ac-2":    { "id": "ac-2",    "deviceType": "ac",     "deviceLabel": "Air Conditioner", "room": "Main Bedroom",  "state": "off", "olderSettingValue": "22",       "currentSettingValue": "22",       "defaultSettingValue": "24",     "settingLabel": "Temp (°C)" },
-            "ac-3":    { "id": "ac-3",    "deviceType": "ac",     "deviceLabel": "Air Conditioner", "room": "Guest Bedroom", "state": "off", "olderSettingValue": "23",       "currentSettingValue": "23",       "defaultSettingValue": "24",     "settingLabel": "Temp (°C)" },
-            "light-1": { "id": "light-1", "deviceType": "light",  "deviceLabel": "Smart Lighting",  "room": "Living Room",   "state": "on",  "olderSettingValue": "Warm",     "currentSettingValue": "Warm",     "defaultSettingValue": "Warm",   "settingLabel": "Mode" },
-            "light-2": { "id": "light-2", "deviceType": "light",  "deviceLabel": "Smart Lighting",  "room": "Main Bedroom",  "state": "off", "olderSettingValue": "Disabled", "currentSettingValue": "Disabled", "defaultSettingValue": "Warm",   "settingLabel": "Mode" },
-            "lock-1":  { "id": "lock-1",  "deviceType": "lock",   "deviceLabel": "Smart Lock",      "room": "Front Door",    "state": "on",  "olderSettingValue": "Unlocked", "currentSettingValue": "Unlocked", "defaultSettingValue": "Locked", "settingLabel": "Mode" },
-            "cam-1":   { "id": "cam-1",   "deviceType": "camera", "deviceLabel": "Smart Camera",    "room": "Kitchen",       "state": "on",  "olderSettingValue": "Online",   "currentSettingValue": "Online",   "defaultSettingValue": "Online", "settingLabel": "Mode" },
-            "cam-2":   { "id": "cam-2",   "deviceType": "camera", "deviceLabel": "Smart Camera",    "room": "Front Door",    "state": "on",  "olderSettingValue": "Online",   "currentSettingValue": "Online",   "defaultSettingValue": "Online", "settingLabel": "Mode" },
-            "cam-3":   { "id": "cam-3",   "deviceType": "camera", "deviceLabel": "Smart Camera",    "room": "Guest Room",    "state": "off", "olderSettingValue": "Private",  "currentSettingValue": "Private",  "defaultSettingValue": "Online", "settingLabel": "Mode" }
+        "ac-1": {
+            "settingLabel": "Temp (°C)",
+            "currentSettingValue": "24",
+            "id": "ac-1",
+            "room": "Living Room",
+            "deviceType": "ac",
+            "defaultSettingValue": "24",
+            "state": "on",
+            "deviceLabel": "Air Conditioner",
+            "olderSettingValue": "24"
+        },
+        "ac-2": {
+            "olderSettingValue": "22",
+            "deviceLabel": "Air Conditioner",
+            "state": "off",
+            "defaultSettingValue": "21",
+            "deviceType": "ac",
+            "room": "Main Bedroom",
+            "id": "ac-2",
+            "currentSettingValue": "21",
+            "settingLabel": "Temp (°C)"
+        },
+        "ac-3": {
+            "defaultSettingValue": "26",
+            "state": "on",
+            "olderSettingValue": "23",
+            "deviceLabel": "Air Conditioner",
+            "settingLabel": "Temp (°C)",
+            "currentSettingValue": "26",
+            "id": "ac-3",
+            "room": "Guest Bedroom",
+            "deviceType": "ac"
+        },
+        "cam-1": {
+            "defaultSettingValue": "Online",
+            "state": "off",
+            "olderSettingValue": "Online",
+            "deviceLabel": "Smart Camera",
+            "settingLabel": "Mode",
+            "currentSettingValue": "Online",
+            "id": "cam-1",
+            "room": "Kitchen",
+            "deviceType": "camera"
+        },
+        "cam-2": {
+            "defaultSettingValue": "Protect",
+            "state": "on",
+            "olderSettingValue": "Online",
+            "deviceLabel": "Smart Camera",
+            "settingLabel": "Mode",
+            "currentSettingValue": "Protect",
+            "id": "cam-2",
+            "deviceType": "camera",
+            "room": "Front Door"
+        },
+        "cam-3": {
+            "defaultSettingValue": "Online",
+            "state": "on",
+            "deviceLabel": "Smart Camera",
+            "olderSettingValue": "Private",
+            "settingLabel": "Mode",
+            "currentSettingValue": "Private",
+            "id": "cam-3",
+            "room": "Guest Bedroom",
+            "deviceType": "camera"
+        },
+        "light-1": {
+            "currentSettingValue": "Warm",
+            "settingLabel": "Mode",
+            "deviceType": "light",
+            "room": "Living Room",
+            "id": "light-1",
+            "defaultSettingValue": "Warm",
+            "olderSettingValue": "Warm",
+            "deviceLabel": "Smart Lighting",
+            "state": "on"
+        },
+        "light-2": {
+            "defaultSettingValue": "Warm",
+            "deviceLabel": "Smart Lighting",
+            "olderSettingValue": "Disabled",
+            "state": "off",
+            "currentSettingValue": "Warm",
+            "settingLabel": "Mode",
+            "deviceType": "light",
+            "room": "Main Bedroom",
+            "id": "light-2"
+        },
+        "lock-1": {
+            "defaultSettingValue": "Guest",
+            "state": "on",
+            "olderSettingValue": "Unlocked",
+            "deviceLabel": "Smart Lock",
+            "settingLabel": "Mode",
+            "currentSettingValue": "DND",
+            "id": "lock-1",
+            "deviceType": "lock",
+            "room": "Front Door"
         }
     };
 
