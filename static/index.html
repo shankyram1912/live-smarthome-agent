@@ -1382,6 +1382,57 @@
             background-color: rgba(255, 255, 255, 0.4);
             border-width: 4px; /* Expands slightly on hover for tactile feedback */
         }
+
+        /* --- MODAL SYSTEM --- */
+        .icon-btn-small {
+            background: transparent; border: none; color: var(--text-tertiary);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            padding: 4px; border-radius: 6px; transition: all 0.2s;
+        }
+        .icon-btn-small:hover { color: #fff; background: rgba(255,255,255,0.1); }
+
+        .modal-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            z-index: 9999; justify-content: center; align-items: center;
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active { display: flex; opacity: 1; }
+
+        .modal-box {
+            width: 80%; height: 80%; background: rgba(24, 24, 26, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255,255,255,0.15);
+            display: flex; flex-direction: column; overflow: hidden;
+            transform: scale(0.95); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .modal-overlay.active .modal-box { transform: scale(1); }
+
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 24px 32px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); background: rgba(0,0,0,0.2);
+        }
+        .modal-header h2 { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; color: #fff; }
+
+        .close-modal-btn {
+            background: rgba(255,255,255,0.1); border: none; width: 36px; height: 36px;
+            border-radius: 18px; color: #fff; font-size: 22px; line-height: 1;
+            cursor: pointer; display: flex; justify-content: center; align-items: center; transition: all 0.2s;
+        }
+        .close-modal-btn:hover { background: rgba(255,69,58,0.2); color: var(--apple-red); transform: rotate(90deg); }
+
+        .modal-body {
+            flex-grow: 1; padding: 32px; display: flex; flex-direction: column; overflow: hidden;
+        }
+        
+        /* Auto-magical scaling when the container moves into the modal! */
+        #tool-modal-overlay #tool-log-container { gap: 16px; padding-right: 16px; }
+        #tool-modal-overlay .tool-entry { padding: 16px 20px; border-radius: 16px; gap: 12px; }
+        #tool-modal-overlay .tool-entry.request { margin-right: 60px; border-left-width: 4px; }
+        #tool-modal-overlay .tool-entry.response { margin-left: 60px; border-right-width: 4px; }
+        #tool-modal-overlay .tool-badge { font-size: 12px; padding: 4px 8px; border-radius: 6px; }
+        #tool-modal-overlay .tool-name { font-size: 16px; }
+        #tool-modal-overlay .tool-payload { font-size: 14px; padding: 16px; border-radius: 10px; line-height: 1.5; }        
     </style>
 </head>
 
@@ -1437,10 +1488,20 @@
             <div class="tool-log-section">
                 <div class="tool-log-header">
                     <span>Tool Activity</span>
-                    <button class="clear-logs-btn" onclick="document.getElementById('tool-log-container').innerHTML = ''">CLEAR</button>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <button class="icon-btn-small" id="expand-logs-btn" title="Expand Logs">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+                            </svg>
+                        </button>
+                        <button class="clear-logs-btn" onclick="document.getElementById('tool-log-container').innerHTML = ''">CLEAR</button>
+                    </div>
                 </div>
-                <div id="tool-log-container">
-                    <!-- Logs dynamically injected here -->
+                <!-- SIDEBAR SLOT -->
+                <div id="sidebar-log-slot" style="display: flex; flex-direction: column; flex-grow: 1; min-height: 0;">
+                    <div id="tool-log-container">
+                        <!-- Logs dynamically injected here ONE time -->
+                    </div>
                 </div>
             </div>
 
@@ -1579,6 +1640,20 @@
             </div>
         </div>
     </div>
+
+    <!-- BIG TOOL LOG MODAL OVERLAY -->
+    <div id="tool-modal-overlay" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2>Tool Activity Logs</h2>
+                <button class="close-modal-btn" id="close-logs-btn">&times;</button>
+            </div>
+            <!-- MODAL SLOT -->
+            <div id="modal-log-slot" class="modal-body">
+                <!-- Log container gets MOVED here when opened -->
+            </div>
+        </div>
+    </div>    
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
