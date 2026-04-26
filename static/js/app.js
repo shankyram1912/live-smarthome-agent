@@ -281,7 +281,19 @@ async function connectWebsocket() {
             // 2. Loop through the parts (Gemini can sometimes return multiple tool calls in one event)
             adkEvent.content.parts.forEach((part, index) => {
                 
-                // 3. Check if this part is a function response
+                // 3A. Check if this part is a function call
+                if (part.functionCall) {
+                    // Define your active smart home tools
+                    const smartHomeTools = [
+                        "get_smart_home_devices_info",
+                    ];
+                    if (smartHomeTools.includes(part.functionCall.name)) {
+                        window.logToolUse(part.functionCall.name, true, part.functionCall.args);
+                    }
+                                        
+                }
+
+                // 3B. Check if this part is a function response
                 if (part.functionResponse) {
                     
                     // Define your active smart home tools
