@@ -152,10 +152,13 @@ async def websocket_endpoint(
                     audio_blob = types.Blob(
                         mime_type="audio/pcm;rate=16000", data=message["bytes"]
                     )
+                    logger.info("Frontend sent AUDIO.")
                     live_request_queue.send_realtime(audio_blob)
 
                 elif "text" in message:
                     json_message = json.loads(message["text"])
+                    
+                    logger.info(f"Frontend sent TEXT - {json_message}")
 
                     if json_message.get("type") == "text":
                         content = types.Content(
@@ -164,6 +167,7 @@ async def websocket_endpoint(
                         live_request_queue.send_realtime(content) # Note: changed send_content to send_realtime for text in bidi
 
                     elif json_message.get("type") == "image":
+                        logger.info(f"Frontend sent IMAGE")
                         image_data = base64.b64decode(json_message["data"])
                         mime_type = json_message.get("mimeType", "image/jpeg")
                         image_blob = types.Blob(
