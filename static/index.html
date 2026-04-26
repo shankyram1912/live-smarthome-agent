@@ -2052,6 +2052,56 @@
             container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
         };
 
+        // --- MODAL EVENT LISTENERS ---
+        function initToolModal() {
+            const expandBtn = document.getElementById('expand-logs-btn');
+            const closeBtn = document.getElementById('close-logs-btn');
+            const modalOverlay = document.getElementById('tool-modal-overlay');
+            
+            const logContainer = document.getElementById('tool-log-container');
+            const sidebarSlot = document.getElementById('sidebar-log-slot');
+            const modalSlot = document.getElementById('modal-log-slot');
+
+            if (!expandBtn || !closeBtn || !modalOverlay || !logContainer || !sidebarSlot || !modalSlot) {
+                console.warn("Modal setup skipped. Missing HTML elements.");
+                return;
+            }
+
+            // 2. Expand Click
+            expandBtn.addEventListener('click', () => {
+                // Move container to modal
+                modalSlot.appendChild(logContainer);
+                
+                // Fade in
+                modalOverlay.style.display = 'flex';
+                setTimeout(() => {
+                    modalOverlay.classList.add('active');
+                }, 10);
+                
+                // Scroll to latest log
+                logContainer.scrollTo({ top: logContainer.scrollHeight });
+            });
+
+            // 3. Close Click
+            closeBtn.addEventListener('click', () => {
+                // Fade out
+                modalOverlay.classList.remove('active');
+                
+                setTimeout(() => {
+                    modalOverlay.style.display = 'none';
+                    
+                    // Move container back to sidebar safely AFTER fade out
+                    sidebarSlot.appendChild(logContainer);
+                    logContainer.scrollTo({ top: logContainer.scrollHeight });
+                }, 300); // 300ms matches the CSS transition time
+            });
+            
+            // 4. Close on clicking the dark background overlay
+            modalOverlay.addEventListener('click', (e) => {
+                if (e.target === modalOverlay) closeBtn.click();
+            });
+        }
+
         window.onload = () => {
             renderDeviceGrid();
         };
