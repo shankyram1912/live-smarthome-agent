@@ -152,7 +152,7 @@ async def websocket_endpoint(
                     audio_blob = types.Blob(
                         mime_type="audio/pcm;rate=16000", data=message["bytes"]
                     )
-                    logger.info("Frontend sent AUDIO.")
+                    logger.debug("Frontend sent AUDIO.")
                     live_request_queue.send_realtime(audio_blob)
 
                 elif "text" in message:
