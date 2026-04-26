@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Home Firestore Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom scrollbar for the JSON output block */
+        pre::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        pre::-webkit-scrollbar-track {
+            background: #1f2937; 
+        }
+        pre::-webkit-scrollbar-thumb {
+            background: #4b5563; 
+            border-radius: 4px;
+        }
+        pre::-webkit-scrollbar-thumb:hover {
+            background: #6b7280; 
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-sans text-gray-800 p-6">
+
+    <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+        
+        <div class="bg-blue-600 p-6 text-white">
+            <h1 class="text-2xl font-bold flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+                </svg>
+                Smart Home Data Manager
+            </h1>
+            <p class="text-blue-100 mt-1 text-sm">Firestore Database Integration</p>
+        </div>
+
+        <div class="p-6">
+            <div id="status-message" class="hidden mb-6 p-4 rounded-lg text-sm font-medium border">
+                <!-- Status messages will appear here -->
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-4 mb-8">
+                <button id="load-btn" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex justify-center items-center gap-2 shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                    </svg>
+                    Load Data to Firestore
+                </button>
+                <button id="retrieve-btn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex justify-center items-center gap-2 shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                    Retrieve Data
+                </button>
+            </div>
+
+            <div>
+                <h2 class="text-lg font-semibold text-gray-700 mb-2">Retrieved Data Payload:</h2>
+                <div class="bg-gray-900 rounded-lg overflow-hidden shadow-inner border border-gray-800">
+                    <pre id="output" class="p-4 text-green-400 font-mono text-sm overflow-x-auto h-80 whitespace-pre-wrap break-words">Click "Retrieve Data" to view the current database state.</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        // =====================================================================
+        // 🔥 CONFIGURE YOUR FIREBASE CONFIG 🔥
+        // Replace this with the config object from your Firebase Console
+        // =====================================================================
+        const firebaseConfig = {
+			apiKey: "AIzaSyAU4978uMcFABSTmOtC70ySsAP4yoJpqv8",
+			authDomain: "genai-e2e-demos.firebaseapp.com",
+			projectId: "genai-e2e-demos",
+			storageBucket: "genai-e2e-demos.firebasestorage.app",
+			messagingSenderId: "554686566379",
+			appId: "1:554686566379:web:5b543c4b169319ffe913ae"
+        };
+        // =====================================================================
+
+        let app, db;
+        
+        // DOM Elements
+        const loadBtn = document.getElementById('load-btn');
+        const retrieveBtn = document.getElementById('retrieve-btn');
+        const outputDisplay = document.getElementById('output');
+        const statusMessage = document.getElementById('status-message');
+
+        function showStatus(message, type = 'info') {
+            statusMessage.textContent = message;
+            statusMessage.classList.remove('hidden', 'bg-red-50', 'text-red-700', 'border-red-200', 'bg-green-50', 'text-green-700', 'border-green-200', 'bg-blue-50', 'text-blue-700', 'border-blue-200');
+            
+            if (type === 'error') {
+                statusMessage.classList.add('bg-red-50', 'text-red-700', 'border-red-200');
+            } else if (type === 'success') {
+                statusMessage.classList.add('bg-green-50', 'text-green-700', 'border-green-200');
+            } else {
+                statusMessage.classList.add('bg-blue-50', 'text-blue-700', 'border-blue-200');
+            }
+        }
+
+        try {
+            app = initializeApp(firebaseConfig);
+            // Pass the specific database name here
+            db = getFirestore(app, "live-smartcamera");
+        } catch (error) {
+            showStatus("Failed to initialize Firebase. Check your config.", "error");
+            console.error(error);
+        }
+
+        const initialData = {
+            devices: {
+                "ac-1": { "id": "ac-1", "deviceType": "ac", "deviceLabel": "Air Conditioner", "room": "Living Room", "state": "off", "olderSettingValue": "24", "currentSettingValue": "24", "defaultSettingValue": "24", "settingLabel": "Temp (°C)" },
+                "ac-2": { "id": "ac-2", "deviceType": "ac", "deviceLabel": "Air Conditioner", "room": "Main Bedroom", "state": "off", "olderSettingValue": "22", "currentSettingValue": "22", "defaultSettingValue": "24", "settingLabel": "Temp (°C)" },
+                "ac-3": { "id": "ac-3", "deviceType": "ac", "deviceLabel": "Air Conditioner", "room": "Guest Bedroom", "state": "off", "olderSettingValue": "23", "currentSettingValue": "23", "defaultSettingValue": "24", "settingLabel": "Temp (°C)" },
+                "light-1": { "id": "light-1", "deviceType": "light", "deviceLabel": "Smart Lighting", "room": "Living Room", "state": "on", "olderSettingValue": "Warm", "currentSettingValue": "Warm", "defaultSettingValue": "Warm", "settingLabel": "Mode" },
+                "light-2": { "id": "light-2", "deviceType": "light", "deviceLabel": "Smart Lighting", "room": "Main Bedroom", "state": "off", "olderSettingValue": "Disabled", "currentSettingValue": "Disabled", "defaultSettingValue": "Warm", "settingLabel": "Mode" },
+                "lock-1": { "id": "lock-1", "deviceType": "lock", "deviceLabel": "Smart Lock", "room": "Front Door", "state": "on", "olderSettingValue": "Unlocked", "currentSettingValue": "Unlocked", "defaultSettingValue": "Locked", "settingLabel": "Mode" },
+                "cam-1": { "id": "cam-1", "deviceType": "camera", "deviceLabel": "Smart Camera", "room": "Kitchen", "state": "on", "olderSettingValue": "Online", "currentSettingValue": "Online", "defaultSettingValue": "Online", "settingLabel": "Mode" },
+                "cam-2": { "id": "cam-2", "deviceType": "camera", "deviceLabel": "Smart Camera", "room": "Front Door", "state": "on", "olderSettingValue": "Online", "currentSettingValue": "Online", "defaultSettingValue": "Online", "settingLabel": "Mode" },
+                "cam-3": { "id": "cam-3", "deviceType": "camera", "deviceLabel": "Smart Camera", "room": "Guest Room", "state": "off", "olderSettingValue": "Private", "currentSettingValue": "Private", "defaultSettingValue": "Online", "settingLabel": "Mode" }
+            }
+        };
+
+        loadBtn.addEventListener('click', async () => {
+            if (firebaseConfig.projectId === "YOUR_PROJECT_ID") {
+                showStatus("Error: Update the firebaseConfig block with your Firebase project details.", "error");
+                return;
+            }
+
+            try {
+                loadBtn.disabled = true;
+                loadBtn.classList.add('opacity-75', 'cursor-not-allowed');
+                showStatus("Writing data using Firebase SDK...", "info");
+
+                const docRef = doc(db, "home-users", "default");
+                // Using merge: true ensures we don't wipe out other user fields if they exist
+                await setDoc(docRef, initialData, { merge: true });
+
+                showStatus("Successfully loaded device configuration to Firestore!", "success");
+            } catch (error) {
+                console.error("Error writing document: ", error);
+                showStatus(`Failed to load data: ${error.message}`, "error");
+            } finally {
+                loadBtn.disabled = false;
+                loadBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+            }
+        });
+
+        retrieveBtn.addEventListener('click', async () => {
+            if (firebaseConfig.projectId === "YOUR_PROJECT_ID") {
+                showStatus("Error: Update the firebaseConfig block with your Firebase project details.", "error");
+                return;
+            }
+
+            try {
+                retrieveBtn.disabled = true;
+                retrieveBtn.classList.add('opacity-75', 'cursor-not-allowed');
+                showStatus("Fetching data using Firebase SDK...", "info");
+                outputDisplay.textContent = "Loading...";
+
+                const docRef = doc(db, "home-users", "default");
+                const docSnap = await getDoc(docRef);
+
+                if (!docSnap.exists()) {
+                    showStatus("No document found. Try clicking 'Load Data' first.", "error");
+                    outputDisplay.textContent = "Document does not exist.";
+                    return;
+                }
+
+                showStatus("Data retrieved successfully!", "success");
+                outputDisplay.textContent = JSON.stringify(docSnap.data(), null, 2);
+            } catch (error) {
+                console.error("Error fetching document: ", error);
+                showStatus(`Failed to retrieve data: ${error.message}`, "error");
+                outputDisplay.textContent = "Error fetching data.";
+            } finally {
+                retrieveBtn.disabled = false;
+                retrieveBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+            }
+        });
+    </script>
+</body>
+</html>
