@@ -22,9 +22,11 @@ const socketStatus = document.getElementById('socket-status');
 const orbButton = document.getElementById('orb-button');
 const transcriptUser = document.getElementById('transcript-user');
 const transcriptAi = document.getElementById('transcript-ai');
-// NEW: End Button Elements
+// End Button Elements
 const endBtnContainer = document.getElementById('end-btn-container');
 const endBtn = document.getElementById('end-btn');
+
+const chatContainer = document.getElementById('chat-container');
 
 // --- UI HELPERS ---
 
