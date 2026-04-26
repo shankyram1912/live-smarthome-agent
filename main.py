@@ -80,7 +80,10 @@ async def root():
 async def websocket_endpoint(
     websocket: WebSocket,
     user_id: str,
-    session_id: str
+    session_id: str,
+    voice: Optional[str] = "aoede",              # Defaults to 'aoede'
+    affective_dialog: Optional[bool] = False,    # Auto-converts "true" to True
+    proactive_audio: Optional[bool] = False      # Auto-converts "false" to False    
 ) -> None:    
     
     logger.info(
@@ -88,6 +91,7 @@ async def websocket_endpoint(
     )    
     await websocket.accept()
     logger.info("WebSocket connection accepted")
+    logger.info(f"Settings - Voice: {voice}, Affective: {affective_dialog}, Proactive: {proactive_audio}")
 
     # Get or create session
     session = await session_service.get_session(

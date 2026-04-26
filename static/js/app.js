@@ -176,8 +176,21 @@ async function connectWebsocket() {
     }
 
     // 2. Connect to ADK FastAPI WebSocket Route
+
+    // Get settings from the UI
+    const voice = document.getElementById('voice-select').value;
+    const affectiveDialog = document.getElementById('affective-toggle').classList.contains('active');
+    const proactiveAudio = document.getElementById('proactive-toggle').classList.contains('active');
+
+    // Build query parameters safely
+    const params = new URLSearchParams({
+        voice: voice,
+        affective_dialog: affectiveDialog,
+        proactive_audio: proactiveAudio
+    });
+
     const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const wsUrl = `${wsProtocol}//${window.location.host}/live-smarthome-agent/ws/${userId}/${sessionId}`;
+    const wsUrl = `${wsProtocol}//${window.location.host}/live-smarthome-agent/ws/${userId}/${sessionId}?${params.toString()}`;
     websocket = new WebSocket(wsUrl);
 
     // Force binary messages to be ArrayBuffers, not Blobs, to receive audio stream directly. Does not affect Text Frames, only Binary Frames at the network protocol level.
