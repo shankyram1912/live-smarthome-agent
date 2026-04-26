@@ -3,188 +3,746 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Home Firestore Manager</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Aris — Admin Console</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* Custom scrollbar for the JSON output block */
-        pre::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+        :root {
+            --bg-base: #000000;
+            --panel-bg: rgba(24, 24, 26, 0.5);
+            --panel-border: rgba(255, 255, 255, 0.08);
+            --panel-highlight: inset 0 1px 1px rgba(255, 255, 255, 0.15);
+            --text-primary: #F5F5F7;
+            --text-secondary: #A1A1A6;
+            --text-tertiary: #7A7A80;
+            --apple-green: #30D158;
+            --apple-green-glow: rgba(48, 209, 88, 0.4);
+            --apple-red: #FF453A;
+            --apple-red-glow: rgba(255, 69, 58, 0.4);
+            --apple-blue: #0A84FF;
+            --apple-blue-glow: rgba(10, 132, 255, 0.3);
+            --apple-blue-bg: rgba(10, 132, 255, 0.15);
+            --apple-orange: #FF9F0A;
+            --apple-purple: #BF5AF2;
+            --glass-blur: blur(60px);
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --mono: 'SF Mono', 'Fira Code', 'Fira Mono', 'Roboto Mono', monospace;
         }
-        pre::-webkit-scrollbar-track {
-            background: #1f2937; 
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font-family); -webkit-font-smoothing: antialiased; }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 24px 60px;
         }
-        pre::-webkit-scrollbar-thumb {
-            background: #4b5563; 
-            border-radius: 4px;
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background:
+                radial-gradient(circle at 30% 50%, rgba(10,132,255,0.05) 0%, transparent 40%),
+                radial-gradient(circle at 75% 25%, rgba(255,159,10,0.04) 0%, transparent 30%),
+                radial-gradient(circle at 20% 80%, rgba(48,209,88,0.03) 0%, transparent 40%);
+            animation: ambient-shift 25s ease-in-out infinite alternate;
+            z-index: -1;
+            pointer-events: none;
         }
-        pre::-webkit-scrollbar-thumb:hover {
-            background: #6b7280; 
+
+        @keyframes ambient-shift {
+            0%   { transform: translate(0,0) scale(1); }
+            100% { transform: translate(-3%,-3%) scale(1.05); }
         }
+
+        .console-wrapper { width: 100%; max-width: 920px; display: flex; flex-direction: column; gap: 20px; }
+
+        /* ── HEADER ── */
+        .console-header { display: flex; align-items: center; justify-content: space-between; padding: 0 4px; }
+        .header-left { display: flex; align-items: center; gap: 14px; }
+        .header-icon {
+            width: 40px; height: 40px; border-radius: 12px;
+            background: var(--apple-blue-bg); border: 1px solid rgba(10,132,255,0.3);
+            display: flex; align-items: center; justify-content: center; color: var(--apple-blue);
+        }
+        .header-icon svg { width: 20px; height: 20px; }
+        .header-title { font-size: 22px; font-weight: 800; letter-spacing: -0.6px; color: #fff; }
+        .header-subtitle { font-size: 12px; font-weight: 500; color: var(--text-tertiary); margin-top: 2px; }
+        .engine-pill {
+            background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);
+            padding: 5px 12px; border-radius: 14px;
+            font-size: 11px; font-weight: 800; color: var(--text-secondary); letter-spacing: 0.8px; text-transform: uppercase;
+        }
+
+        /* ── GLASS PANEL ── */
+        .glass-panel {
+            background: var(--panel-bg);
+            backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--panel-border);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5), var(--panel-highlight);
+            border-radius: 28px; padding: 28px 32px;
+        }
+
+        /* ── STATUS ── */
+        #status-message {
+            display: none; padding: 14px 20px; border-radius: 16px;
+            font-size: 13px; font-weight: 600;
+            border: 1px solid transparent; align-items: center; gap: 10px;
+        }
+        #status-message.visible { display: flex; }
+        #status-message.error   { background: rgba(255,69,58,0.1);  color: var(--apple-red);   border-color: rgba(255,69,58,0.25); }
+        #status-message.success { background: rgba(48,209,88,0.1);  color: var(--apple-green); border-color: rgba(48,209,88,0.25); }
+        #status-message.info    { background: var(--apple-blue-bg); color: var(--apple-blue);  border-color: rgba(10,132,255,0.25); }
+        .status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+        .error .status-dot   { background: var(--apple-red);   box-shadow: 0 0 8px var(--apple-red-glow); }
+        .success .status-dot { background: var(--apple-green); box-shadow: 0 0 8px var(--apple-green-glow); animation: blink 2s infinite; }
+        .info .status-dot    { background: var(--apple-blue);  box-shadow: 0 0 8px var(--apple-blue-glow); }
+        @keyframes blink { 0%,100%{opacity:1}50%{opacity:0.3} }
+
+        /* ── SECTION LABEL ── */
+        .section-label {
+            font-size: 11px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1.4px; color: var(--text-tertiary); margin-bottom: 14px;
+        }
+
+        /* ── ACTION BUTTONS ROW ── */
+        .actions-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+
+        .action-btn {
+            display: flex; align-items: center; justify-content: center; gap: 7px;
+            padding: 13px 12px; border-radius: 14px;
+            font-size: 12px; font-weight: 700; letter-spacing: -0.1px;
+            cursor: pointer; border: 1px solid transparent;
+            transition: all 0.2s cubic-bezier(0.25,1,0.5,1); white-space: nowrap;
+            line-height: 1.2; text-align: center;
+        }
+        .action-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+        .action-btn:active { transform: scale(0.97); }
+        .action-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+        .btn-defaults { background: rgba(255,159,10,0.1);  color: var(--apple-orange); border-color: rgba(255,159,10,0.25); }
+        .btn-defaults:hover:not(:disabled) { background: rgba(255,159,10,0.18); box-shadow: 0 0 18px rgba(255,159,10,0.15); }
+        .btn-retrieve { background: var(--apple-blue-bg);  color: var(--apple-blue);   border-color: rgba(10,132,255,0.25); }
+        .btn-retrieve:hover:not(:disabled) { background: rgba(10,132,255,0.22); box-shadow: 0 0 18px var(--apple-blue-glow); }
+        .btn-init     { background: rgba(48,209,88,0.12);  color: var(--apple-green);  border-color: rgba(48,209,88,0.25); }
+        .btn-init:hover:not(:disabled)     { background: rgba(48,209,88,0.2);  box-shadow: 0 0 18px rgba(48,209,88,0.15); }
+        .btn-delete   { background: rgba(255,69,58,0.1);   color: var(--apple-red);    border-color: rgba(255,69,58,0.2); }
+        .btn-delete:hover:not(:disabled)   { background: rgba(255,69,58,0.18); box-shadow: 0 0 18px rgba(255,69,58,0.15); }
+
+        .panel-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 22px 0; }
+
+        /* ── EDITOR CHROME ── */
+        .editor-topbar {
+            display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+            background: rgba(0,0,0,0.35);
+            border: 1px solid rgba(255,255,255,0.08); border-bottom: none;
+            border-radius: 16px 16px 0 0;
+            padding: 10px 14px;
+        }
+
+        .topbar-left  { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
+        .topbar-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+
+        .tl-dots { display: flex; gap: 5px; align-items: center; flex-shrink: 0; }
+        .tl-dot  { width: 11px; height: 11px; border-radius: 50%; }
+        .tl-red    { background: #FF5F57; }
+        .tl-yellow { background: #FEBC2E; }
+        .tl-green  { background: #28C840; }
+
+        /* mode pill: switches between "editable" and "live" states */
+        .mode-pill {
+            font-family: var(--mono); font-size: 11px; font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        .mode-pill.editable {
+            background: rgba(255,159,10,0.1); color: var(--apple-orange); border-color: rgba(255,159,10,0.25);
+        }
+        .mode-pill.live {
+            background: rgba(48,209,88,0.1); color: var(--apple-green); border-color: rgba(48,209,88,0.25);
+        }
+        .mode-pill.dirty {
+            background: rgba(255,159,10,0.1); color: var(--apple-orange); border-color: rgba(255,159,10,0.25);
+        }
+
+        /* sort & search */
+        .sort-select {
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px; padding: 4px 9px;
+            font-size: 11px; font-weight: 700; color: var(--text-secondary);
+            outline: none; cursor: pointer; appearance: none; transition: border-color 0.2s;
+        }
+        .sort-select:focus { border-color: rgba(10,132,255,0.4); color: var(--text-primary); }
+
+        .search-wrap { position: relative; }
+        .search-wrap svg {
+            position: absolute; left: 8px; top: 50%; transform: translateY(-50%);
+            width: 12px; height: 12px; color: var(--text-tertiary); pointer-events: none;
+        }
+        .filter-search {
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px; padding: 4px 9px 4px 27px;
+            font-size: 11px; font-weight: 500; color: var(--text-primary);
+            outline: none; width: 130px; transition: border-color 0.2s, width 0.3s;
+        }
+        .filter-search:focus { border-color: rgba(10,132,255,0.4); width: 170px; }
+        .filter-search::placeholder { color: var(--text-tertiary); }
+
+        /* chips */
+        .filter-chips { display: flex; gap: 5px; flex-wrap: wrap; }
+        .filter-chip {
+            padding: 3px 9px; border-radius: 9px;
+            font-size: 11px; font-weight: 700;
+            cursor: pointer; border: 1px solid transparent;
+            transition: all 0.15s ease; user-select: none;
+        }
+        .chip-all    { background: rgba(255,255,255,0.07); color: var(--text-secondary); border-color: rgba(255,255,255,0.1); }
+        .chip-ac     { background: rgba(10,132,255,0.08);  color: var(--apple-blue);    border-color: rgba(10,132,255,0.2); }
+        .chip-camera { background: rgba(191,90,242,0.08);  color: var(--apple-purple);  border-color: rgba(191,90,242,0.2); }
+        .chip-light  { background: rgba(255,159,10,0.08);  color: var(--apple-orange);  border-color: rgba(255,159,10,0.2); }
+        .chip-lock   { background: rgba(255,69,58,0.08);   color: var(--apple-red);     border-color: rgba(255,69,58,0.2); }
+        .chip-on     { background: rgba(48,209,88,0.08);   color: var(--apple-green);   border-color: rgba(48,209,88,0.2); }
+        .chip-off    { background: rgba(255,255,255,0.05); color: var(--text-tertiary);  border-color: rgba(255,255,255,0.08); }
+        .filter-chip.active  { opacity: 1; filter: brightness(1.3); box-shadow: 0 0 8px currentColor; }
+        .filter-chip:not(.active) { opacity: 0.5; }
+        .filter-chip:hover   { opacity: 1; }
+
+        .match-count {
+            font-size: 11px; font-weight: 600; color: var(--text-tertiary);
+            padding: 3px 8px; background: rgba(255,255,255,0.04); border-radius: 8px; white-space: nowrap;
+        }
+
+        .icon-btn {
+            display: flex; align-items: center; justify-content: center;
+            width: 27px; height: 27px; border-radius: 8px;
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-secondary); cursor: pointer; transition: all 0.15s ease; flex-shrink: 0;
+        }
+        .icon-btn svg { width: 13px; height: 13px; }
+        .icon-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+        .icon-btn.active { background: var(--apple-blue-bg); border-color: rgba(10,132,255,0.3); color: var(--apple-blue); }
+
+        /* ── EDITOR BODY ── */
+        .editor-body {
+            position: relative;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.08); border-top: none;
+            border-radius: 0 0 16px 16px;
+            overflow: hidden;
+        }
+
+        .line-numbers {
+            position: absolute; top: 0; left: 0; width: 42px; height: 100%;
+            padding: 16px 0; text-align: right;
+            font-family: var(--mono); font-size: 12px; line-height: 1.65;
+            color: rgba(255,255,255,0.17);
+            pointer-events: none; user-select: none; overflow: hidden;
+            border-right: 1px solid rgba(255,255,255,0.06);
+        }
+        .line-numbers span { display: block; padding-right: 10px; }
+
+        .editor-textarea {
+            display: block; width: 100%;
+            min-height: 380px; max-height: 520px;
+            padding: 16px 16px 16px 58px;
+            font-family: var(--mono); font-size: 12px; line-height: 1.65;
+            outline: none; background: transparent; border: none;
+            overflow: auto; resize: vertical;
+            color: #A8FF78;
+            white-space: pre;
+            word-break: normal;
+            transition: color 0.3s ease;
+        }
+
+        /* When in "retrieved / read-only view" mode */
+        .editor-textarea.view-mode {
+            color: #6EE7B7;
+            caret-color: transparent;
+        }
+
+        .editor-textarea::-webkit-scrollbar { width: 6px; height: 6px; }
+        .editor-textarea::-webkit-scrollbar-track { background: transparent; }
+        .editor-textarea::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+        /* ── CONFIRM DIALOG ── */
+        #confirm-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            z-index: 100; align-items: center; justify-content: center;
+        }
+        #confirm-overlay.visible { display: flex; }
+        .confirm-box {
+            background: rgba(28,28,30,0.96); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 24px; padding: 32px; max-width: 380px; width: 90%;
+            box-shadow: 0 40px 80px rgba(0,0,0,0.6), var(--panel-highlight); text-align: center;
+        }
+        .confirm-icon {
+            width: 52px; height: 52px; border-radius: 16px;
+            background: rgba(255,69,58,0.12); border: 1px solid rgba(255,69,58,0.25);
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 20px; color: var(--apple-red);
+        }
+        .confirm-icon svg { width: 26px; height: 26px; }
+        .confirm-title { font-size: 18px; font-weight: 800; color: #fff; letter-spacing: -0.4px; margin-bottom: 8px; }
+        .confirm-body  { font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 24px; }
+        .confirm-actions { display: flex; gap: 10px; }
+        .confirm-cancel {
+            flex: 1; padding: 12px; border-radius: 12px;
+            background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-primary); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+        }
+        .confirm-cancel:hover { background: rgba(255,255,255,0.12); }
+        .confirm-confirm {
+            flex: 1; padding: 12px; border-radius: 12px;
+            background: rgba(255,69,58,0.15); border: 1px solid rgba(255,69,58,0.3);
+            color: var(--apple-red); font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+        }
+        .confirm-confirm:hover { background: rgba(255,69,58,0.25); box-shadow: 0 0 20px rgba(255,69,58,0.2); }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spinner { width: 14px; height: 14px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen font-sans text-gray-800 p-6">
+<body>
 
-    <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
-        
-        <div class="bg-blue-600 p-6 text-white">
-            <h1 class="text-2xl font-bold flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+    <div id="confirm-overlay">
+        <div class="confirm-box">
+            <div class="confirm-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                 </svg>
-                Smart Home Data Manager
-            </h1>
-            <p class="text-blue-100 mt-1 text-sm">Firestore Database Integration</p>
-        </div>
-
-        <div class="p-6">
-            <div id="status-message" class="hidden mb-6 p-4 rounded-lg text-sm font-medium border">
-                <!-- Status messages will appear here -->
             </div>
-
-            <div class="flex flex-col sm:flex-row gap-4 mb-8">
-                <button id="load-btn" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex justify-center items-center gap-2 shadow-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                    </svg>
-                    Load Data to Firestore
-                </button>
-                <button id="retrieve-btn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex justify-center items-center gap-2 shadow-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
-                    </svg>
-                    Retrieve Data
-                </button>
-            </div>
-
-            <div>
-                <h2 class="text-lg font-semibold text-gray-700 mb-2">Retrieved Data Payload:</h2>
-                <div class="bg-gray-900 rounded-lg overflow-hidden shadow-inner border border-gray-800">
-                    <pre id="output" class="p-4 text-green-400 font-mono text-sm overflow-x-auto h-80 whitespace-pre-wrap break-words">Click "Retrieve Data" to view the current database state.</pre>
-                </div>
+            <div class="confirm-title">Delete Device Config?</div>
+            <div class="confirm-body">This will permanently delete <code style="color:var(--apple-orange);font-size:12px">home-users/default</code> from Firestore. This cannot be undone.</div>
+            <div class="confirm-actions">
+                <button class="confirm-cancel" id="confirm-cancel-btn">Cancel</button>
+                <button class="confirm-confirm" id="confirm-delete-btn">Delete</button>
             </div>
         </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    <div class="console-wrapper">
 
-        // =====================================================================
-        // 🔥 CONFIGURE YOUR FIREBASE CONFIG 🔥
-        // Replace this with the config object from your Firebase Console
-        // =====================================================================
-        const firebaseConfig = {
-			apiKey: "AIzaSyAU4978uMcFABSTmOtC70ySsAP4yoJpqv8",
-			authDomain: "genai-e2e-demos.firebaseapp.com",
-			projectId: "genai-e2e-demos",
-			storageBucket: "genai-e2e-demos.firebasestorage.app",
-			messagingSenderId: "554686566379",
-			appId: "1:554686566379:web:5b543c4b169319ffe913ae"
-        };
-        // =====================================================================
+        <!-- Header -->
+        <div class="console-header">
+            <div class="header-left">
+                <div class="header-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="header-title">Admin Console</div>
+                    <div class="header-subtitle">Firestore Device Configuration · live-smartcamera</div>
+                </div>
+            </div>
+            <div class="engine-pill">genai-e2e-demos</div>
+        </div>
 
-        let app, db;
-        
-        // DOM Elements
-        const loadBtn = document.getElementById('load-btn');
-        const retrieveBtn = document.getElementById('retrieve-btn');
-        const outputDisplay = document.getElementById('output');
-        const statusMessage = document.getElementById('status-message');
+        <!-- Status Banner -->
+        <div id="status-message">
+            <div class="status-dot"></div>
+            <span id="status-text"></span>
+        </div>
 
-        function showStatus(message, type = 'info') {
-            statusMessage.textContent = message;
-            statusMessage.classList.remove('hidden', 'bg-red-50', 'text-red-700', 'border-red-200', 'bg-green-50', 'text-green-700', 'border-green-200', 'bg-blue-50', 'text-blue-700', 'border-blue-200');
-            
-            if (type === 'error') {
-                statusMessage.classList.add('bg-red-50', 'text-red-700', 'border-red-200');
-            } else if (type === 'success') {
-                statusMessage.classList.add('bg-green-50', 'text-green-700', 'border-green-200');
-            } else {
-                statusMessage.classList.add('bg-blue-50', 'text-blue-700', 'border-blue-200');
-            }
+        <!-- Single unified panel -->
+        <div class="glass-panel">
+
+            <!-- Actions -->
+            <div class="section-label">Actions</div>
+            <div class="actions-row">
+
+                <!-- Load Defaults -->
+                <button class="action-btn btn-defaults" id="defaults-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                    Load Defaults
+                </button>
+
+                <!-- Retrieve from Firestore -->
+                <button class="action-btn btn-retrieve" id="retrieve-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                    </svg>
+                    Retrieve Config
+                </button>
+
+                <!-- Initialize / push to Firestore -->
+                <button class="action-btn btn-init" id="init-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                    </svg>
+                    Initialize Config
+                </button>
+
+                <!-- Delete -->
+                <button class="action-btn btn-delete" id="delete-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                    Delete Config
+                </button>
+            </div>
+
+            <div class="panel-divider"></div>
+
+            <!-- Unified Editor -->
+            <div class="section-label" style="margin-bottom:12px">Device Config</div>
+
+            <div>
+                <!-- Topbar -->
+                <div class="editor-topbar">
+                    <div class="topbar-left">
+                        <div class="tl-dots">
+                            <div class="tl-dot tl-red"></div>
+                            <div class="tl-dot tl-yellow"></div>
+                            <div class="tl-dot tl-green"></div>
+                        </div>
+
+                        <span class="mode-pill editable" id="mode-pill">home-users/default · editable</span>
+
+                        <!-- Search -->
+                        <div class="search-wrap">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                            <input class="filter-search" id="search-input" type="text" placeholder="Search…">
+                        </div>
+
+                        <!-- Sort -->
+                        <select class="sort-select" id="sort-select">
+                            <option value="id-asc">Sort: ID ↑</option>
+                            <option value="id-desc">Sort: ID ↓</option>
+                            <option value="type-asc">Sort: Type</option>
+                            <option value="room-asc">Sort: Room</option>
+                            <option value="state-on">On first</option>
+                            <option value="state-off">Off first</option>
+                        </select>
+
+                        <!-- Type / state chips -->
+                        <div class="filter-chips" id="filter-chips">
+                            <span class="filter-chip chip-all active"  data-filter="all">All</span>
+                            <span class="filter-chip chip-ac"          data-filter="ac">AC</span>
+                            <span class="filter-chip chip-camera"      data-filter="camera">Camera</span>
+                            <span class="filter-chip chip-light"       data-filter="light">Light</span>
+                            <span class="filter-chip chip-lock"        data-filter="lock">Lock</span>
+                            <span class="filter-chip chip-on"          data-filter="state-on">On</span>
+                            <span class="filter-chip chip-off"         data-filter="state-off">Off</span>
+                        </div>
+
+                        <span class="match-count" id="match-count"></span>
+                    </div>
+
+                    <div class="topbar-right">
+                        <!-- Copy -->
+                        <button class="icon-btn" id="copy-btn" title="Copy JSON">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Body -->
+                <div class="editor-body">
+                    <div class="line-numbers" id="line-numbers"></div>
+                    <textarea class="editor-textarea" id="config-editor" spellcheck="false" autocomplete="off" autocorrect="off"></textarea>
+                </div>
+            </div>
+
+        </div><!-- /.glass-panel -->
+    </div><!-- /.console-wrapper -->
+
+<script type="module">
+    import { initializeApp }                                from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getFirestore, doc, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+    // ── Firebase ──────────────────────────────────────────────────────────────
+    const firebaseConfig = {
+        apiKey: "AIzaSyAU4978uMcFABSTmOtC70ySsAP4yoJpqv8",
+        authDomain: "genai-e2e-demos.firebaseapp.com",
+        projectId: "genai-e2e-demos",
+        storageBucket: "genai-e2e-demos.firebasestorage.app",
+        messagingSenderId: "554686566379",
+        appId: "1:554686566379:web:5b543c4b169319ffe913ae"
+    };
+
+    // ── Default constant ──────────────────────────────────────────────────────
+    const initialData = {
+        devices: {
+            "ac-1":    { "id": "ac-1",    "deviceType": "ac",     "deviceLabel": "Air Conditioner", "room": "Living Room",   "state": "off", "olderSettingValue": "24",       "currentSettingValue": "24",       "defaultSettingValue": "24",     "settingLabel": "Temp (°C)" },
+            "ac-2":    { "id": "ac-2",    "deviceType": "ac",     "deviceLabel": "Air Conditioner", "room": "Main Bedroom",  "state": "off", "olderSettingValue": "22",       "currentSettingValue": "22",       "defaultSettingValue": "24",     "settingLabel": "Temp (°C)" },
+            "ac-3":    { "id": "ac-3",    "deviceType": "ac",     "deviceLabel": "Air Conditioner", "room": "Guest Bedroom", "state": "off", "olderSettingValue": "23",       "currentSettingValue": "23",       "defaultSettingValue": "24",     "settingLabel": "Temp (°C)" },
+            "light-1": { "id": "light-1", "deviceType": "light",  "deviceLabel": "Smart Lighting",  "room": "Living Room",   "state": "on",  "olderSettingValue": "Warm",     "currentSettingValue": "Warm",     "defaultSettingValue": "Warm",   "settingLabel": "Mode" },
+            "light-2": { "id": "light-2", "deviceType": "light",  "deviceLabel": "Smart Lighting",  "room": "Main Bedroom",  "state": "off", "olderSettingValue": "Disabled", "currentSettingValue": "Disabled", "defaultSettingValue": "Warm",   "settingLabel": "Mode" },
+            "lock-1":  { "id": "lock-1",  "deviceType": "lock",   "deviceLabel": "Smart Lock",      "room": "Front Door",    "state": "on",  "olderSettingValue": "Unlocked", "currentSettingValue": "Unlocked", "defaultSettingValue": "Locked", "settingLabel": "Mode" },
+            "cam-1":   { "id": "cam-1",   "deviceType": "camera", "deviceLabel": "Smart Camera",    "room": "Kitchen",       "state": "on",  "olderSettingValue": "Online",   "currentSettingValue": "Online",   "defaultSettingValue": "Online", "settingLabel": "Mode" },
+            "cam-2":   { "id": "cam-2",   "deviceType": "camera", "deviceLabel": "Smart Camera",    "room": "Front Door",    "state": "on",  "olderSettingValue": "Online",   "currentSettingValue": "Online",   "defaultSettingValue": "Online", "settingLabel": "Mode" },
+            "cam-3":   { "id": "cam-3",   "deviceType": "camera", "deviceLabel": "Smart Camera",    "room": "Guest Room",    "state": "off", "olderSettingValue": "Private",  "currentSettingValue": "Private",  "defaultSettingValue": "Online", "settingLabel": "Mode" }
         }
+    };
 
+    // ── DOM ───────────────────────────────────────────────────────────────────
+    const defaultsBtn    = document.getElementById('defaults-btn');
+    const retrieveBtn    = document.getElementById('retrieve-btn');
+    const initBtn        = document.getElementById('init-btn');
+    const deleteBtn      = document.getElementById('delete-btn');
+    const editor         = document.getElementById('config-editor');
+    const lineNumbers    = document.getElementById('line-numbers');
+    const modePill       = document.getElementById('mode-pill');
+    const statusMsg      = document.getElementById('status-message');
+    const statusText     = document.getElementById('status-text');
+    const sortSelect     = document.getElementById('sort-select');
+    const searchInput    = document.getElementById('search-input');
+    const matchCount     = document.getElementById('match-count');
+    const copyBtn        = document.getElementById('copy-btn');
+    const confirmOverlay = document.getElementById('confirm-overlay');
+    const confirmCancel  = document.getElementById('confirm-cancel-btn');
+    const confirmDelete  = document.getElementById('confirm-delete-btn');
+
+    // ── State ─────────────────────────────────────────────────────────────────
+    // "source" is the canonical in-memory object the editor represents.
+    // When retrieved from Firestore it becomes the full doc; otherwise it's
+    // whatever the user has typed (or the defaults).
+    let sourceData   = null;   // last parsed object (used for sort/filter re-renders)
+    let activeFilter = 'all';
+    let searchTerm   = '';
+    let isViewMode   = false;  // true = retrieved from Firestore, textarea tinted teal
+    let isDirty      = false;  // user has edited after a retrieve
+
+    // ── Firebase ──────────────────────────────────────────────────────────────
+    let db;
+    try { db = getFirestore(initializeApp(firebaseConfig), "live-smartcamera"); }
+    catch (e) { showStatus("Firebase init failed.", "error"); console.error(e); }
+
+    const docRef = () => doc(db, "home-users", "default");
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+    function showStatus(msg, type = 'info') {
+        statusText.textContent = msg;
+        statusMsg.className = `visible ${type}`;
+    }
+
+    const allBtns = [defaultsBtn, retrieveBtn, initBtn, deleteBtn];
+    function lockBtns()   { allBtns.forEach(b => { b.disabled = true;  b._h = b.innerHTML; b.innerHTML = `<span class="spinner"></span> Working…`; }); }
+    function unlockBtns() { allBtns.forEach(b => { b.disabled = false; if (b._h) { b.innerHTML = b._h; delete b._h; } }); }
+
+    // ── Line numbers ──────────────────────────────────────────────────────────
+    function refreshLines() {
+        const lines = (editor.value.match(/\n/g) || []).length + 1;
+        lineNumbers.innerHTML = Array.from({ length: lines }, (_, i) => `<span>${i+1}</span>`).join('');
+    }
+
+    editor.addEventListener('scroll', () => { lineNumbers.style.transform = `translateY(-${editor.scrollTop}px)`; });
+    editor.addEventListener('input',  () => {
+        refreshLines();
+        // Mark dirty if user types after a retrieve
+        if (isViewMode) {
+            isDirty = true;
+            setMode('dirty');
+        }
+        // Sync sourceData so sort/filter still works on current text
+        try { sourceData = JSON.parse(editor.value); } catch {}
+    });
+
+    // ── Mode pill ─────────────────────────────────────────────────────────────
+    function setMode(mode) {
+        // mode: 'editable' | 'live' | 'dirty'
+        modePill.className = `mode-pill ${mode}`;
+        if (mode === 'editable') {
+            modePill.textContent = 'home-users/default · editable';
+            editor.classList.remove('view-mode');
+            editor.readOnly = false;
+            isViewMode = false; isDirty = false;
+        } else if (mode === 'live') {
+            modePill.textContent = 'home-users/default · live from Firestore';
+            editor.classList.add('view-mode');
+            editor.readOnly = false; // still allow editing
+            isViewMode = true; isDirty = false;
+        } else if (mode === 'dirty') {
+            modePill.textContent = 'home-users/default · edited (unsaved)';
+            editor.classList.remove('view-mode');
+        }
+    }
+
+    // ── Sort / filter ─────────────────────────────────────────────────────────
+    function sortDevices(devices, key) {
+        const fns = {
+            'id-asc':    ([a],[b])   => a.localeCompare(b),
+            'id-desc':   ([a],[b])   => b.localeCompare(a),
+            'type-asc':  ([,a],[,b]) => (a.deviceType||'').localeCompare(b.deviceType||'') || a.id.localeCompare(b.id),
+            'room-asc':  ([,a],[,b]) => (a.room||'').localeCompare(b.room||'') || a.id.localeCompare(b.id),
+            'state-on':  ([,a],[,b]) => (a.state==='on'?0:1)  - (b.state==='on'?0:1)  || a.id.localeCompare(b.id),
+            'state-off': ([,a],[,b]) => (a.state==='off'?0:1) - (b.state==='off'?0:1) || a.id.localeCompare(b.id),
+        };
+        return Object.fromEntries(Object.entries(devices).sort(fns[key] || fns['id-asc']));
+    }
+
+    function filterDevices(devices, filter, search) {
+        return Object.fromEntries(
+            Object.entries(devices).filter(([id, d]) => {
+                const byType =
+                    filter === 'all'       ? true :
+                    filter === 'state-on'  ? d.state === 'on' :
+                    filter === 'state-off' ? d.state === 'off' :
+                    d.deviceType === filter;
+                const bySearch = !search ? true :
+                    [id, d.deviceType, d.deviceLabel, d.room, d.state, d.currentSettingValue]
+                        .join(' ').toLowerCase().includes(search.toLowerCase());
+                return byType && bySearch;
+            })
+        );
+    }
+
+    // Re-render the textarea based on current sort/filter without losing the
+    // full dataset (sort/filter only affects what's written to the editor
+    // when a valid JSON object is available in sourceData).
+    function applyView() {
+        if (!sourceData?.devices) return;
+
+        const sorted   = sortDevices(sourceData.devices, sortSelect.value);
+        const filtered = filterDevices(sorted, activeFilter, searchTerm);
+        const total    = Object.keys(sourceData.devices).length;
+        const shown    = Object.keys(filtered).length;
+
+        matchCount.textContent = (activeFilter === 'all' && !searchTerm)
+            ? `${total} device${total !== 1 ? 's' : ''}`
+            : `${shown} / ${total}`;
+
+        // Write to editor: when filtering, show only the filtered subset;
+        // when showing all, write the fully sorted version.
+        const display = (activeFilter !== 'all' || searchTerm)
+            ? { ...sourceData, devices: filtered }
+            : { ...sourceData, devices: sorted };
+
+        const next = JSON.stringify(display, null, 2);
+        if (editor.value !== next) {
+            const s = editor.scrollTop;
+            editor.value = next;
+            editor.scrollTop = s;
+        }
+        refreshLines();
+    }
+
+    // Wire up controls
+    sortSelect.addEventListener('change', applyView);
+    searchInput.addEventListener('input', () => { searchTerm = searchInput.value; applyView(); });
+
+    document.getElementById('filter-chips').addEventListener('click', e => {
+        const chip = e.target.closest('.filter-chip');
+        if (!chip) return;
+        document.querySelectorAll('#filter-chips .filter-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        activeFilter = chip.dataset.filter;
+        applyView();
+    });
+
+    // Copy button
+    copyBtn.addEventListener('click', async () => {
         try {
-            app = initializeApp(firebaseConfig);
-            // Pass the specific database name here
-            db = getFirestore(app, "live-smartcamera");
-        } catch (error) {
-            showStatus("Failed to initialize Firebase. Check your config.", "error");
-            console.error(error);
-        }
+            await navigator.clipboard.writeText(editor.value);
+            copyBtn.classList.add('active');
+            setTimeout(() => copyBtn.classList.remove('active'), 1400);
+        } catch { showStatus("Copy failed — check clipboard permissions.", "error"); }
+    });
 
-        const initialData = {
-            devices: {
-                "ac-1": { "id": "ac-1", "deviceType": "ac", "deviceLabel": "Air Conditioner", "room": "Living Room", "state": "off", "olderSettingValue": "24", "currentSettingValue": "24", "defaultSettingValue": "24", "settingLabel": "Temp (°C)" },
-                "ac-2": { "id": "ac-2", "deviceType": "ac", "deviceLabel": "Air Conditioner", "room": "Main Bedroom", "state": "off", "olderSettingValue": "22", "currentSettingValue": "22", "defaultSettingValue": "24", "settingLabel": "Temp (°C)" },
-                "ac-3": { "id": "ac-3", "deviceType": "ac", "deviceLabel": "Air Conditioner", "room": "Guest Bedroom", "state": "off", "olderSettingValue": "23", "currentSettingValue": "23", "defaultSettingValue": "24", "settingLabel": "Temp (°C)" },
-                "light-1": { "id": "light-1", "deviceType": "light", "deviceLabel": "Smart Lighting", "room": "Living Room", "state": "on", "olderSettingValue": "Warm", "currentSettingValue": "Warm", "defaultSettingValue": "Warm", "settingLabel": "Mode" },
-                "light-2": { "id": "light-2", "deviceType": "light", "deviceLabel": "Smart Lighting", "room": "Main Bedroom", "state": "off", "olderSettingValue": "Disabled", "currentSettingValue": "Disabled", "defaultSettingValue": "Warm", "settingLabel": "Mode" },
-                "lock-1": { "id": "lock-1", "deviceType": "lock", "deviceLabel": "Smart Lock", "room": "Front Door", "state": "on", "olderSettingValue": "Unlocked", "currentSettingValue": "Unlocked", "defaultSettingValue": "Locked", "settingLabel": "Mode" },
-                "cam-1": { "id": "cam-1", "deviceType": "camera", "deviceLabel": "Smart Camera", "room": "Kitchen", "state": "on", "olderSettingValue": "Online", "currentSettingValue": "Online", "defaultSettingValue": "Online", "settingLabel": "Mode" },
-                "cam-2": { "id": "cam-2", "deviceType": "camera", "deviceLabel": "Smart Camera", "room": "Front Door", "state": "on", "olderSettingValue": "Online", "currentSettingValue": "Online", "defaultSettingValue": "Online", "settingLabel": "Mode" },
-                "cam-3": { "id": "cam-3", "deviceType": "camera", "deviceLabel": "Smart Camera", "room": "Guest Room", "state": "off", "olderSettingValue": "Private", "currentSettingValue": "Private", "defaultSettingValue": "Online", "settingLabel": "Mode" }
-            }
-        };
+    // ── LOAD DEFAULTS ─────────────────────────────────────────────────────────
+    defaultsBtn.addEventListener('click', () => {
+        sourceData = JSON.parse(JSON.stringify(initialData)); // deep clone
+        activeFilter = 'all';
+        searchTerm   = '';
+        searchInput.value = '';
+        sortSelect.value  = 'id-asc';
+        document.querySelectorAll('#filter-chips .filter-chip').forEach(c => c.classList.toggle('active', c.dataset.filter === 'all'));
+        setMode('editable');
+        applyView();
+        showStatus("Default device config loaded into editor.", "info");
+    });
 
-        loadBtn.addEventListener('click', async () => {
-            if (firebaseConfig.projectId === "YOUR_PROJECT_ID") {
-                showStatus("Error: Update the firebaseConfig block with your Firebase project details.", "error");
+    // ── RETRIEVE ──────────────────────────────────────────────────────────────
+    retrieveBtn.addEventListener('click', async () => {
+        try {
+            lockBtns();
+            showStatus("Fetching device config from Firestore…", "info");
+            editor.value = "Loading…"; refreshLines();
+
+            const snap = await getDoc(docRef());
+            if (!snap.exists()) {
+                showStatus("No document found. Load defaults and Initialize first.", "error");
+                editor.value = "Document does not exist."; refreshLines();
                 return;
             }
 
-            try {
-                loadBtn.disabled = true;
-                loadBtn.classList.add('opacity-75', 'cursor-not-allowed');
-                showStatus("Writing data using Firebase SDK...", "info");
+            sourceData = snap.data();
 
-                const docRef = doc(db, "home-users", "default");
-                // Using merge: true ensures we don't wipe out other user fields if they exist
-                await setDoc(docRef, initialData, { merge: true });
+            // Reset controls
+            activeFilter = 'all';
+            searchTerm   = '';
+            searchInput.value = '';
+            sortSelect.value  = 'id-asc';
+            document.querySelectorAll('#filter-chips .filter-chip').forEach(c => c.classList.toggle('active', c.dataset.filter === 'all'));
 
-                showStatus("Successfully loaded device configuration to Firestore!", "success");
-            } catch (error) {
-                console.error("Error writing document: ", error);
-                showStatus(`Failed to load data: ${error.message}`, "error");
-            } finally {
-                loadBtn.disabled = false;
-                loadBtn.classList.remove('opacity-75', 'cursor-not-allowed');
-            }
-        });
+            setMode('live');
+            applyView();
 
-        retrieveBtn.addEventListener('click', async () => {
-            if (firebaseConfig.projectId === "YOUR_PROJECT_ID") {
-                showStatus("Error: Update the firebaseConfig block with your Firebase project details.", "error");
-                return;
-            }
+            const total = Object.keys(sourceData.devices || {}).length;
+            showStatus(`Retrieved ${total} device${total !== 1 ? 's' : ''} from Firestore.`, "success");
+        } catch (e) {
+            showStatus(`Retrieve failed: ${e.message}`, "error");
+            editor.value = "Error fetching data."; refreshLines();
+        } finally { unlockBtns(); }
+    });
 
-            try {
-                retrieveBtn.disabled = true;
-                retrieveBtn.classList.add('opacity-75', 'cursor-not-allowed');
-                showStatus("Fetching data using Firebase SDK...", "info");
-                outputDisplay.textContent = "Loading...";
+    // ── INITIALIZE ────────────────────────────────────────────────────────────
+    initBtn.addEventListener('click', async () => {
+        let payload;
+        try { payload = JSON.parse(editor.value); }
+        catch { showStatus("Invalid JSON — fix syntax errors before initializing.", "error"); return; }
+        try {
+            lockBtns();
+            showStatus("Writing device config to Firestore…", "info");
+            await setDoc(docRef(), payload, { merge: true });
+            // After a successful write, treat editor content as the new source
+            sourceData = payload;
+            setMode('live');
+            showStatus("Device config initialized successfully!", "success");
+        } catch (e) {
+            showStatus(`Initialize failed: ${e.message}`, "error");
+        } finally { unlockBtns(); }
+    });
 
-                const docRef = doc(db, "home-users", "default");
-                const docSnap = await getDoc(docRef);
+    // ── DELETE ────────────────────────────────────────────────────────────────
+    deleteBtn.addEventListener('click', () => confirmOverlay.classList.add('visible'));
+    confirmCancel.addEventListener('click', () => confirmOverlay.classList.remove('visible'));
+    confirmOverlay.addEventListener('click', e => { if (e.target === confirmOverlay) confirmOverlay.classList.remove('visible'); });
 
-                if (!docSnap.exists()) {
-                    showStatus("No document found. Try clicking 'Load Data' first.", "error");
-                    outputDisplay.textContent = "Document does not exist.";
-                    return;
-                }
+    confirmDelete.addEventListener('click', async () => {
+        confirmOverlay.classList.remove('visible');
+        try {
+            lockBtns();
+            showStatus("Deleting device config document…", "info");
+            await deleteDoc(docRef());
+            sourceData = null;
+            editor.value = "Document deleted."; refreshLines();
+            matchCount.textContent = '';
+            setMode('editable');
+            showStatus("Device config deleted. Load Defaults to start fresh.", "success");
+        } catch (e) {
+            showStatus(`Delete failed: ${e.message}`, "error");
+        } finally { unlockBtns(); }
+    });
 
-                showStatus("Data retrieved successfully!", "success");
-                outputDisplay.textContent = JSON.stringify(docSnap.data(), null, 2);
-            } catch (error) {
-                console.error("Error fetching document: ", error);
-                showStatus(`Failed to retrieve data: ${error.message}`, "error");
-                outputDisplay.textContent = "Error fetching data.";
-            } finally {
-                retrieveBtn.disabled = false;
-                retrieveBtn.classList.remove('opacity-75', 'cursor-not-allowed');
-            }
-        });
-    </script>
+    // ── Init: load defaults on page load ─────────────────────────────────────
+    sourceData = JSON.parse(JSON.stringify(initialData));
+    applyView();
+    setMode('editable');
+
+</script>
 </body>
 </html>
