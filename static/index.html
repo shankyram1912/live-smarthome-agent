@@ -583,13 +583,15 @@
             background: rgba(0, 0, 0, 0.2); 
             border: none; 
             border-radius: 20px; 
-            padding: 16px 16px 52px 16px; /* Top, Right, Bottom (room for button), Left */
+            /* Top aligned padding: 16px top, 52px right (leaves room for button), 16px bottom */
+            padding: 16px 52px 16px 16px; 
             color: #FFF;
             font-size: 14px; 
             font-weight: 500;
+            line-height: 1.4; /* Forces clean text alignment at the top */
             outline: none;
-            resize: none; /* Prevents manual resizing dragging */
-            font-family: inherit; /* Matches your Inter font */
+            resize: none; 
+            font-family: inherit; 
             box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.4), 
                         inset 0 0 0 1px rgba(255, 255, 255, 0.03),
                         0 1px 1px rgba(255, 255, 255, 0.08);
@@ -611,18 +613,19 @@
         .chat-send-btn {
             position: absolute;
             right: 12px;
-            bottom: 12px; /* Pinned to the bottom right of the expansive box */
+            top: 12px; /* Moved from bottom to top alignment */
             width: 36px; 
             height: 36px;
             border-radius: 50%;
-            background: var(--apple-blue);
+            /* Upgraded to an 'Apple Intelligence' style gradient */
+            background: linear-gradient(135deg, #43CBFF 0%, #BF5AF2 100%);
             border: none;
             color: #FFF;
             display: flex;
             justify-content: center;
             align-items: center;
             cursor: pointer;
-            box-shadow: 0 2px 8px rgba(10, 132, 255, 0.4), inset 0 1px 1px rgba(255,255,255,0.3);
+            box-shadow: 0 4px 12px rgba(191, 90, 242, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.4);
             transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
@@ -1352,19 +1355,18 @@
                     <div class="orb"></div>
                 </div>
                 <div class="mic-instruction" id="mic-text">Tap to Connect</div>
+                <div class="chat-container" id="chat-container">
+                    <input type="text" class="chat-input" id="chat-input" placeholder="Type a message to Aris...">
+                    <button class="chat-send-btn" id="chat-send-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="19" x2="12" y2="5"></line>
+                            <polyline points="5 12 12 5 19 12"></polyline>
+                        </svg>
+                    </button>
+                </div>                
                 <div class="end-btn-container" id="end-btn-container">
                     <button class="end-btn" id="end-btn">End Conversation</button>
                 </div>                
-            </div>
-
-            <div class="chat-container" id="chat-container">
-                <input type="text" class="chat-input" id="chat-input" placeholder="Type a message to Aris...">
-                <button class="chat-send-btn" id="chat-send-btn">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="12" y1="19" x2="12" y2="5"></line>
-                        <polyline points="5 12 12 5 19 12"></polyline>
-                    </svg>
-                </button>
             </div>
 
             <div class="system-vitals">
