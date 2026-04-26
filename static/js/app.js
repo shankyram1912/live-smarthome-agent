@@ -69,6 +69,9 @@ function updateConnectionStatus(connected) {
             endContainer.classList.add('visible');
         }
 
+        // Show Chat
+        if (chatContainer) chatContainer.classList.add('visible');
+
         transcriptUser.innerText = "";
         transcriptAi.innerText = "";
     } else {
@@ -84,6 +87,9 @@ function updateConnectionStatus(connected) {
             endContainer.style.pointerEvents = "none";
             endContainer.classList.remove('visible');
         }
+
+        // Hide Chat
+        if (chatContainer) chatContainer.classList.remove('visible');
         
         transcriptUser.innerText = "Press connect, then speak...";
         transcriptAi.innerText = "";

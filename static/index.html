@@ -557,6 +557,63 @@
             transform: scale(0.98);
         }
 
+        /* --- NEW: CHAT INPUT --- */
+        .chat-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 0;
+            height: 0;
+            opacity: 0;
+            overflow: hidden;
+            pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .chat-container.visible {
+            height: 44px;
+            margin-top: 16px;
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .chat-input {
+            flex-grow: 1;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: none;
+            border-radius: 22px;
+            padding: 0 16px;
+            color: #FFF;
+            font-size: 13px;
+            font-weight: 500;
+            outline: none;
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1), inset 0 2px 4px rgba(0,0,0,0.2);
+            transition: background 0.3s ease;
+        }
+
+        .chat-input::placeholder { color: var(--text-tertiary); }
+        .chat-input:focus { background: rgba(255, 255, 255, 0.1); }
+
+        .chat-send-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--apple-blue);
+            border: none;
+            color: #FFF;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.3), 0 4px 10px rgba(10, 132, 255, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .chat-send-btn:hover { transform: scale(1.05); }
+        .chat-send-btn:active { transform: scale(0.95); }
+        .chat-send-btn svg { width: 18px; height: 18px; stroke-width: 2.5px; }
+
         /* --- ROW LAYOUT --- */
         .vital-row {
             display: flex;
@@ -1282,6 +1339,16 @@
                 <div class="end-btn-container" id="end-btn-container">
                     <button class="end-btn" id="end-btn">End Conversation</button>
                 </div>                
+            </div>
+
+            <div class="chat-container" id="chat-container">
+                <input type="text" class="chat-input" id="chat-input" placeholder="Message Aris...">
+                <button class="chat-send-btn" id="chat-send-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
             </div>
 
             <div class="system-vitals">
