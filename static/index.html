@@ -174,6 +174,35 @@
             transform: translateX(20px);
         }
 
+        .premium-dropdown {
+            background: rgba(255, 255, 255, 0.08) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23A1A1A6' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 10px center;
+            color: var(--text-primary);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 6px 30px 6px 12px; /* Extra right padding for the arrow */
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            font-family: var(--font-family);
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            transition: all 0.2s ease;
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+        }
+
+        .premium-dropdown:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+
+        .premium-dropdown option {
+            background: #18181a; 
+            color: var(--text-primary);
+            font-weight: 600;
+        }        
+
         .app-version {
             margin-top: auto;
             display: flex;
@@ -1103,7 +1132,41 @@
         <!-- NEW: SETTINGS PANEL -->
         <div id="settings-panel">
             <div class="settings-header">Demo Settings</div>
-            
+            <div class="setting-item">
+                <span class="setting-label">Voice</span>
+                <select class="premium-dropdown" id="voice-select">
+                    <option value="achernar">Achernar (Female)</option>
+                    <option value="achird">Achird (Male)</option>
+                    <option value="algenib">Algenib (Male)</option>
+                    <option value="algieba">Algieba (Male)</option>
+                    <option value="alnilam">Alnilam (Male)</option>
+                    <option value="aoede">Aoede (Female)</option>
+                    <option value="autonoe">Autonoe (Female)</option>
+                    <option value="callirrhoe">Callirrhoe (Female)</option>
+                    <option value="charon">Charon (Male)</option>
+                    <option value="despina">Despina (Female)</option>
+                    <option value="enceladus">Enceladus (Male)</option>
+                    <option value="erinome">Erinome (Female)</option>
+                    <option value="fenrir">Fenrir (Male)</option>
+                    <option value="gacrux">Gacrux (Female)</option>
+                    <option value="iapetus">Iapetus (Male)</option>
+                    <option value="kore">Kore (Female)</option>
+                    <option value="laomedeia">Laomedeia (Female)</option>
+                    <option value="leda">Leda (Female)</option>
+                    <option value="orus">Orus (Male)</option>
+                    <option value="pulcherrima">Pulcherrima (Female)</option>
+                    <option value="puck">Puck (Male)</option>
+                    <option value="rasalgethi">Rasalgethi (Male)</option>
+                    <option value="sadachbia">Sadachbia (Male)</option>
+                    <option value="sadaltager">Sadaltager (Male)</option>
+                    <option value="schedar">Schedar (Male)</option>
+                    <option value="sulafat">Sulafat (Female)</option>
+                    <option value="umbriel">Umbriel (Male)</option>
+                    <option value="vindemiatrix">Vindemiatrix (Female)</option>
+                    <option value="zephyr">Zephyr (Female)</option>
+                    <option value="zubenelgenubi">Zubenelgenubi (Male)</option>
+                </select>
+            </div>            
             <div class="setting-item">
                 <span class="setting-label">Affective Dialog</span>
                 <div class="toggle-switch active"></div>
