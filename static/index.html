@@ -135,12 +135,15 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 24px;
+            gap: 4px;
         }
 
         .setting-label {
             font-size: 13px;
             font-weight: 500;
             color: var(--text-secondary);
+            white-space: nowrap; /* Prevents the text from wrapping */
+            flex-shrink: 0
         }
 
         .toggle-switch {
@@ -323,6 +326,9 @@
             -webkit-appearance: none;
             transition: all 0.2s ease;
             box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;            
         }
 
         .premium-dropdown:hover {
@@ -1443,7 +1449,7 @@
         <div id="settings-panel">
             <div class="settings-header">Demo Settings</div>
             <div class="setting-item">
-                <span class="setting-label">Voice </span>
+                <span class="setting-label">Voice</span>
                 <select class="premium-dropdown" id="voice-select">
                     <option value="achernar">Achernar (Female)</option>
                     <option value="achird">Achird (Male)</option>
