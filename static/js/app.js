@@ -284,11 +284,15 @@ async function connectWebsocket() {
                 // 3A. Check if this part is a function call
                 if (part.functionCall) {
                     // Define your active smart home tools
-                    const smartHomeTools = [
+                    const logTools = [
                         "get_smart_home_devices_info",
+                        "control_airconditioner",
+                        "control_camera",
+                        "control_light",
+                        "control_lock"                        
                     ];
-                    if (smartHomeTools.includes(part.functionCall.name)) {
-                        window.logToolUse(part.functionCall.name, true, part.functionCall.args);
+                    if (logTools.includes(part.functionCall.name)) {
+                        window.logToolUse(part.functionCall.name, true, part.functionCall.args || {});
                     }
                                         
                 }
