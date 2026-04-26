@@ -109,8 +109,6 @@ async def websocket_endpoint(
     # ========================================
 
     response_modalities = ["AUDIO"]
-    proactive_audio = None
-    affective_dialog = None
         
     run_config = RunConfig(
         streaming_mode=StreamingMode.BIDI,
@@ -126,11 +124,8 @@ async def websocket_endpoint(
         output_audio_transcription=types.AudioTranscriptionConfig(),
         # Note session resumption only works for Vertex AI, not Gemini API
         session_resumption=types.SessionResumptionConfig(),
-        proactive_audio=(
-            types.proactive_audioConfig(proactive_audio=True)
-            if proactive_audio else None
-        ),
-        enable_affective_dialog=affective_dialog if affective_dialog else None,
+        proactivity=ProactivityConfig(proactive_audio=proactive_audio),
+        enable_affective_dialog=affective_dialog
     )
 
     live_request_queue = LiveRequestQueue()
