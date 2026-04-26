@@ -28,6 +28,9 @@ const endBtn = document.getElementById('end-btn');
 
 const chatContainer = document.getElementById('chat-container');
 
+const chatInput = document.getElementById('chat-input');
+const chatSendBtn = document.getElementById('chat-send-btn');
+
 // --- UI HELPERS ---
 
 /**
@@ -383,7 +386,49 @@ async function connectWebsocket() {
 }
 
 // ==========================================
-// NEW: Session Termination Logic
+// Text Chat Logic
+// ==========================================
+function sendChatMessage() {
+    const text = chatInput.value.trim();
+    if (!text) return;
+
+    if (websocket && websocket.readyState === WebSocket.OPEN && isConnected) {
+        // Send the JSON format your main.py expects
+        const payload = JSON.stringify({
+            type: "text",
+            text: text
+        });
+        
+        websocket.send(payload);
+
+        // Update user text (Gemini doesn't echo text inputs, so we must do it here)
+        transcriptUser.innerText = `"${text}"`;
+
+        // Clear the text box
+        chatInput.value = "";
+        
+        // Removed AI transcript clearing and state changes. 
+        // The backend will naturally overwrite them when the AI responds.
+    }
+}
+
+// Send on Button Click
+if (chatSendBtn) {
+    chatSendBtn.addEventListener('click', sendChatMessage);
+}
+
+// Send on Enter Key (Allow Shift+Enter for new lines)
+if (chatInput) {
+    chatInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault(); 
+            sendChatMessage();
+        }
+    });
+}
+
+// ==========================================
+// Session Termination Logic
 // ==========================================
 function endSession() {
     if (websocket && isConnected) {
