@@ -401,6 +401,9 @@ function sendChatMessage() {
         
         websocket.send(payload);
 
+        // Update user text (Gemini doesn't echo text inputs, so we must do it here)
+        transcriptUser.innerText = `"${text}"`;        
+
         // Clear the text box
         chatInput.value = "";
     }
