@@ -1891,38 +1891,35 @@
             }, 3500); 
         };
 
-        window.logToolUse = function(toolName, isRequest, payload) {
+        // --- 7. TOOL USE LOG EXPORT ---
+        window.logToolUse = function(toolName, isRequest, payload = {}) {
             const container = document.getElementById('tool-log-container');
             if (!container) return;
 
-            // Map the tool name strictly to our CSS classes
             const validTypes =[
                 'get_smart_home_devices_info', 'control_airconditioner', 
                 'control_camera', 'control_light', 'control_lock', 
                 'check_camera', 'check_notifications', 'find_people'
             ];
             
-            // Fallback to default if toolName is unrecognized
             const safeType = validTypes.includes(toolName) ? toolName : 'get_smart_home_devices_info';
-            
             const reqClass = isRequest ? 'request' : 'response';
             const badgeText = isRequest ? 'REQ' : 'RES';
             
-            // Format payload nicely
-            if (toolName === 'get_smart_home_devices_info') {
-                // It's YAML. Keep exactly as-is. If it accidentally comes in as an object, fallback to stringify.
+            // DECLARE IT HERE to prevent the ReferenceError
+            let payloadString = "";
+
+            // 1. If it's the YAML response, use it raw
+            if (toolName === 'get_smart_home_devices_info' && !isRequest) {
                 payloadString = typeof payload === 'string' ? payload : JSON.stringify(payload, null, 2);
-            } else {
-                // It's JSON. If it's an object, stringify it cleanly. 
-                // If it's already a string, try parsing and re-stringifying to ensure perfect indentation.
-                if (typeof payload === 'object') {
-                    payloadString = JSON.stringify(payload, null, 2);
-                } else {
-                    try {
-                        payloadString = JSON.stringify(JSON.parse(payload), null, 2);
-                    } catch (e) {
-                        payloadString = payload; // Fallback if parsing fails
-                    }
+            } 
+            // 2. Otherwise, treat as JSON and pretty-print
+            else {
+                try {
+                    const jsonObj = typeof payload === 'string' ? JSON.parse(payload) : payload;
+                    payloadString = JSON.stringify(jsonObj, null, 2);
+                } catch (e) {
+                    payloadString = String(payload);
                 }
             }
 
@@ -1940,11 +1937,8 @@
             container.appendChild(logEl);
             
             // Auto-scroll to bottom
-            container.scrollTo({
-                top: container.scrollHeight,
-                behavior: 'smooth'
-            });
-        };        
+            container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+        };       
 
         window.onload = () => {
             renderDeviceGrid();
