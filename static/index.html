@@ -1893,68 +1893,90 @@
         };
 
         // --- 7. TOOL USE LOG EXPORT ---
-        window.logToolUse = function(toolName, isRequest, payload = {}) {
-            const container = document.getElementById('tool-log-container');
-            if (!container) return;
-
-            const validTypes =[
+        const TOOL_LOG_CONFIG = {
+            MAX_ENTRIES: 50,
+            KNOWN_TOOLS: new Set([
                 'get_smart_home_devices_info', 'control_airconditioner', 
                 'control_camera', 'control_light', 'control_lock', 
                 'check_camera', 'check_notifications', 'find_people'
-            ];
-            
-            const safeType = validTypes.includes(toolName) ? toolName : 'get_smart_home_devices_info';
+            ])
+        };
+
+        /**
+        * Pure function to format tool payloads securely.
+        * Separated from DOM logic for easy unit testing.
+        */
+        function formatToolPayload(toolName, isRequest, rawPayload) {
+            // 1. Normalize empty inputs
+            if (rawPayload == null) return isRequest ? "{}" : "";
+
+            // 2. Parse stringified JSON if necessary
+            let parsed = rawPayload;
+            if (typeof rawPayload === 'string') {
+                try { parsed = JSON.parse(rawPayload); } catch (e) { /* keep as string */ }
+            }
+
+            // 3. Handle YAML specifically for the device info response
+            if (toolName === 'get_smart_home_devices_info' && !isRequest) {
+                let yamlStr = "";
+                
+                // Safely extract from known backend contract structures
+                if (typeof parsed === 'object' && parsed !== null) {
+                    yamlStr = parsed.result || parsed?.response?.result || JSON.stringify(parsed, null, 2);
+                } else {
+                    yamlStr = String(parsed);
+                }
+
+                // Fix double-escaped newlines from backend
+                return yamlStr.replace(/\\n/g, '\n');
+            }
+
+            // 4. Default: Pretty-print JSON
+            return typeof parsed === 'object' 
+                ? JSON.stringify(parsed, null, 2) 
+                : String(parsed);
+        }
+
+        /**
+        * DOM Rendering logic (Secured against XSS)
+        */
+        window.logToolUse = function(toolName, isRequest, payload) {
+            const container = document.getElementById('tool-log-container');
+            if (!container) return;
+
+            // 1. Data Preparation
+            const safeType = TOOL_LOG_CONFIG.KNOWN_TOOLS.has(toolName) ? toolName : 'get_smart_home_devices_info';
             const reqClass = isRequest ? 'request' : 'response';
             const badgeText = isRequest ? 'REQ' : 'RES';
-            
-            let payloadString = "";
+            const formattedPayload = formatToolPayload(toolName, isRequest, payload);
 
-            // 1. Attempt to parse the payload into a real object first
-            let parsedPayload = payload;
-            if (typeof payload === 'string') {
-                try {
-                    parsedPayload = JSON.parse(payload);
-                } catch (e) {
-                    // It's just a regular string, leave it alone
-                }
-            }
-
-            // 2. Formatting Logic
-            if (toolName === 'get_smart_home_devices_info' && !isRequest) {
-                // If the parsed payload has the 'result' key, extract the YAML cleanly!
-                if (parsedPayload && typeof parsedPayload === 'object' && parsedPayload.result) {
-                    payloadString = parsedPayload.result;
-                } 
-                // Fallback for raw strings
-                else if (typeof parsedPayload === 'string') {
-                    payloadString = parsedPayload.replace(/\\n/g, '\n');
-                } 
-                // Extreme fallback
-                else {
-                    payloadString = JSON.stringify(parsedPayload, null, 2);
-                }
-            } 
-            // 3. For all other tools, pretty-print as JSON
-            else {
-                payloadString = JSON.stringify(parsedPayload, null, 2);
-            }
-
+            // 2. Secure DOM Creation (Avoiding innerHTML for untrusted data)
             const logEl = document.createElement('div');
             logEl.className = `tool-entry ${reqClass} type-${safeType}`;
             
+            // It is safe to use innerHTML for our own hardcoded UI structure
             logEl.innerHTML = `
                 <div class="tool-meta">
                     <span class="tool-badge">${badgeText}</span>
-                    <span class="tool-name">${toolName}</span>
+                    <span class="tool-name"></span>
                 </div>
-                <div class="tool-payload">${payloadString}</div>
+                <div class="tool-payload"></div>
             `;
 
+            // SECURE: Inject untrusted data using textContent
+            logEl.querySelector('.tool-name').textContent = toolName;
+            logEl.querySelector('.tool-payload').textContent = formattedPayload;
+
+            // 3. DOM Management (Prevent memory leaks)
             container.appendChild(logEl);
+            while (container.children.length > TOOL_LOG_CONFIG.MAX_ENTRIES) {
+                container.removeChild(container.firstChild);
+            }
             
-            // Auto-scroll to bottom
+            // 4. UX: Auto-scroll
             container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
         };
+
         window.onload = () => {
             renderDeviceGrid();
         };
