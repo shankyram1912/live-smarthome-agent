@@ -311,7 +311,7 @@ async function connectWebsocket() {
                     ];
                     // Log tool call requests
                     if (logTools.includes(part.functionResponse.name)) {
-                        window.logToolUse(part.functionResponse.name, true, part.functionResponse.response || {});
+                        window.logToolUse(part.functionResponse.name, false, part.functionResponse.response || {});
                     }
 
                     // Define your active smart home tools for display update
