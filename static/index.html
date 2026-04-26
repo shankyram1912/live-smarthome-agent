@@ -531,9 +531,12 @@
         }
 
         .end-btn {
-            background: rgba(255, 69, 58, 0.1);
+            background: rgba(255, 69, 58, 0.15); /* Slightly more red so it doesn't need a border */
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             color: var(--apple-red);
-            border: 1px solid rgba(255, 69, 58, 0.3);
+            border: none; /* Kill the border */
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1); /* Give it the same glass lip */
             padding: 12px 32px;
             border-radius: 30px;
             font-size: 11px;
