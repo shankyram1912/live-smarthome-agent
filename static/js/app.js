@@ -283,7 +283,7 @@ async function connectWebsocket() {
                 
                 // 3A. Check if this part is a function call
                 if (part.functionCall) {
-                    // Define your active smart home tools
+                    // Define tools for logging
                     const logTools = [
                         "get_smart_home_devices_info",
                         "control_airconditioner",
@@ -291,6 +291,7 @@ async function connectWebsocket() {
                         "control_light",
                         "control_lock"                        
                     ];
+                    // Log tool call requests
                     if (logTools.includes(part.functionCall.name)) {
                         window.logToolUse(part.functionCall.name, true, part.functionCall.args || {});
                     }
@@ -300,7 +301,20 @@ async function connectWebsocket() {
                 // 3B. Check if this part is a function response
                 if (part.functionResponse) {
                     
-                    // Define your active smart home tools
+                    // Define tools for logging
+                    const logTools = [
+                        "get_smart_home_devices_info",
+                        "control_airconditioner",
+                        "control_camera",
+                        "control_light",
+                        "control_lock"                        
+                    ];
+                    // Log tool call requests
+                    if (logTools.includes(part.functionResponse.name)) {
+                        window.logToolUse(part.functionResponse.name, true, part.functionResponse.response || {});
+                    }
+
+                    // Define your active smart home tools for display update
                     const smartHomeTools = [
                         "control_airconditioner",
                         "control_camera",

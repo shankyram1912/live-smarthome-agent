@@ -180,16 +180,17 @@
             flex-direction: column;
             flex-grow: 1;
             min-height: 0;
-            margin-top: 12px;
+            /* Removed the 12px margin-top to pull the line up closer to Proactive Audio */
+            margin-top: 0px; 
             border-top: 1px solid rgba(255, 255, 255, 0.06);
-            padding-top: 12px;
+            padding-top: 16px;
         }
 
         .tool-log-header {
-            font-size: 12px;
+            font-size: 14px; /* Increased to match Proactive Audio (14px) */
             font-weight: 600;
             color: var(--text-secondary);
-            margin-bottom: 8px;
+            margin-bottom: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -200,9 +201,9 @@
             border: none;
             border-radius: 8px;
             color: var(--text-tertiary);
-            font-size: 8px;
+            font-size: 10px; /* Increased for better readability alongside the 14px header */
             font-weight: 700;
-            padding: 3px 6px;
+            padding: 4px 8px;
             cursor: pointer;
             transition: all 0.2s;
         }
@@ -215,7 +216,7 @@
         #tool-log-container {
             display: flex;
             flex-direction: column;
-            gap: 6px; /* Tighter gap between logs */
+            gap: 6px; 
             overflow-y: auto;
             flex-grow: 1;
             padding-right: 4px;
@@ -227,9 +228,9 @@
             display: flex;
             flex-direction: column;
             gap: 4px;
-            padding: 6px 8px; /* Tighter padding */
+            padding: 6px 8px; 
             border-radius: 8px;
-            font-size: 9px;
+            font-size: 11px; /* Base font increased */
             font-family: var(--font-family);
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid rgba(255, 255, 255, 0.05);
@@ -250,13 +251,13 @@
         /* COMPACT REQUEST VS RESPONSE */
         .tool-entry.request {
             border-left: 2px solid var(--tool-color);
-            margin-right: 8px; /* Reduced offset */
+            margin-right: 8px; 
             box-shadow: -6px 0 12px -8px var(--tool-color);
         }
 
         .tool-entry.response {
             border-right: 2px solid var(--tool-color);
-            margin-left: 8px; /* Reduced offset */
+            margin-left: 8px; 
             align-items: flex-end;
             text-align: right;
             background: rgba(255, 255, 255, 0.02);
@@ -274,7 +275,7 @@
         }
 
         .tool-badge {
-            font-size: 7px; /* Tiny badge font */
+            font-size: 8px; /* Slightly increased to match new proportions */
             font-weight: 800;
             padding: 2px 4px;
             border-radius: 4px;
@@ -286,14 +287,14 @@
 
         .tool-name {
             font-weight: 700;
-            font-size: 9px;
+            font-size: 11px; /* Increased by 2px (was 9px) */
             color: var(--text-primary);
         }
 
         .tool-payload {
             font-family: 'SF Mono', 'Fira Code', monospace;
-            font-size: 7.5px; /* Micro JSON font */
-            line-height: 1.2;
+            font-size: 9.5px; /* Increased by 2px (was 7.5px) */
+            line-height: 1.3;
             color: var(--text-secondary);
             background: rgba(0, 0, 0, 0.3);
             padding: 6px;
@@ -302,8 +303,8 @@
             word-wrap: break-word;
             white-space: pre-wrap;
             border: 1px solid rgba(255, 255, 255, 0.03);
-            text-align: left; /* Keep JSON left-aligned even in responses */
-        }        
+            text-align: left; 
+        }       
 
         .premium-dropdown {
             background: rgba(255, 255, 255, 0.08) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23A1A1A6' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 10px center;
