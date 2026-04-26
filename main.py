@@ -164,7 +164,8 @@ async def websocket_endpoint(
                         content = types.Content(
                             parts=[types.Part(text=json_message["text"])]
                         )
-                        live_request_queue.send_realtime(content) # Note: changed send_content to send_realtime for text in bidi
+                        #live_request_queue.send_realtime(content) # Note: changed send_content to send_realtime for text in bidi
+                        live_request_queue.send_content(content)
 
                     elif json_message.get("type") == "image":
                         logger.info(f"Frontend sent IMAGE")
