@@ -10,6 +10,8 @@ import warnings
 import config
 import uvicorn
 
+from typing import Optional
+
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
