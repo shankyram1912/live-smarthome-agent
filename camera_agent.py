@@ -113,7 +113,7 @@ def ask_camera_agent(device_id: str, user_query: str) -> str:
             "1. GROUNDING: Base your answer STRICTLY on what is clearly visible in the image AND the provided CAMERA METADATA. Do not guess or hallucinate details outside of these two sources.\n"
             "2. ANSWER: Use the information from the camera feed image to answer the question, by contexually anlyzing the data to summarize the situation. E.g. Subject A is doing X."
             "3. UNCERTAINTY: If the requested information is not present in the image or metadata, explicitly state: 'I cannot clearly see that in the current camera feed.'\n"
-            "4. TONE & LENGTH: Keep your response brief, factual, and direct. Avoid unnecessary conversational filler.\n"
+            "4. TONE & LENGTH: Keep your response brief, factual, and direct. Dont reference time. Avoid unnecessary conversational filler.\n"
             "5. FORMATTING: Output RAW TEXT ONLY. Do not use Markdown, asterisks, bolding, lists, quotes, or code blocks.\n\n"
             f"USER QUESTION: \"{user_query}\"\n"
             "ANSWER:"
