@@ -70,8 +70,13 @@ async def root():
 
 @app.get("/live-smarthome-agent/initialize")
 async def root():
-    """Serve the index.html page."""
+    """Serve the initialize.html page."""
     return FileResponse(Path(__file__).parent / "static" / "initialize.html")
+
+@app.get("/live-smarthome-agent/camview")
+async def root():
+    """Serve the index.html page."""
+    return FileResponse(Path(__file__).parent / "static" / "camview.html")
 
 
 
