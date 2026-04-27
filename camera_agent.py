@@ -29,13 +29,13 @@ def ask_camera_agent(device_id: str, user_query: str) -> str:
     
     # 1. Strictly fetch from environment variables
     project_id = os.getenv("GOOGLE_CLOUD_PROJECT")
-    location = os.getenv("GOOGLE_CLOUD_LOCATION")
+    project_location = os.getenv("GOOGLE_CLOUD_LOCATION")
     
     # 2. Check if env variables are missing: log error and throw exception
     missing_vars =[]
     if not project_id:
         missing_vars.append("GOOGLE_CLOUD_PROJECT")
-    if not location:
+    if not project_location:
         missing_vars.append("GOOGLE_CLOUD_LOCATION")
         
     if missing_vars:
@@ -43,7 +43,7 @@ def ask_camera_agent(device_id: str, user_query: str) -> str:
         logging.error(error_msg)
         raise ValueError(error_msg)
     else:
-        logging.info(f"GOOGLE_CLOUD_PROJECT {GOOGLE_CLOUD_PROJECT}, GOOGLE_CLOUD_LOCATION {GOOGLE_CLOUD_LOCATION}")
+        logging.info(f"GOOGLE_CLOUD_PROJECT {project_id}, GOOGLE_CLOUD_LOCATION {project_location}")
         
     # 3. Construct the image path
     image_path = f"./static/camview/{device_id}.jpg"
@@ -56,7 +56,7 @@ def ask_camera_agent(device_id: str, user_query: str) -> str:
 
     try:
         # 5. Initialize Vertex AI with env variables
-        vertexai.init(project=project_id, location=location)
+        vertexai.init(project=project_id, location=project_location)
         
         # 6. Initialize the requested Gemini 3 Flash model
         model = GenerativeModel("gemini-3-flash-preview")
