@@ -286,6 +286,7 @@ async function connectWebsocket() {
                     // Define tools for logging
                     const logTools = [
                         "get_smart_home_devices_info",
+                        "check_camera",
                         "control_airconditioner",
                         "control_camera",
                         "control_light",
@@ -304,7 +305,6 @@ async function connectWebsocket() {
                     // Define tools for logging
                     const logTools = [
                         "get_smart_home_devices_info",
-                        "check_camera",
                         "control_airconditioner",
                         "control_camera",
                         "control_light",
@@ -318,7 +318,6 @@ async function connectWebsocket() {
                     // Define your active smart home tools for display update
                     const smartHomeTools = [
                         "control_airconditioner",
-                        "check_camera",
                         "control_camera",
                         "control_light",
                         "control_lock"
