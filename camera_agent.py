@@ -58,8 +58,8 @@ def ask_camera_agent(device_id: str, user_query: str) -> str:
         # 5. Initialize Vertex AI with env variables
         vertexai.init(project=project_id, location=project_location)
         
-        # 6. Initialize the requested Gemini 3 Flash model
-        model = GenerativeModel("gemini-3-flash-preview")
+        # 6. Initialize the requested Gemini Flash model
+        model = GenerativeModel("gemini-2.5-flash")
         
         # 7. Load the local image file
         camera_image = Image.load_from_file(image_path)
