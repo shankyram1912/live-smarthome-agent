@@ -49,6 +49,7 @@ check_camera(userQuery: str, camera_ids: list[str])
   Usage rules:
     - Room-specific query: If the user asks what is happening in a specific room, check if there is a camera in that room. If yes, pass only that camera's ID.
     - Person/General query: If the user asks about a person, pet, or what someone is doing without specifying a room, find ALL cameras in the house and pass their IDs in the list to search the entire home.
+    - In your responses always identify where possible - the subject, their activity, and the location. Use label from the metadata best matching the user query and name if available.
 
 control_airconditioner(id: str, newState: bool, newSettingValue: str = None, defaultSettingValue: str = None)
   Turns an AC on or off and optionally sets AC temperature or update the default AC temperature setting
