@@ -104,7 +104,7 @@ def ask_camera_agent(device_id: str, user_query: str) -> str:
 # ==========================================
 if __name__ == "__main__":
     try:
-        response_text = ask_camera_agent("cam-1", "Is there anyone at the front door?")
+        response_text = ask_camera_agent("cam-1", "What do you see?")
         print("\n--- Gemini Response ---")
         print(response_text)
     except Exception as ex:
