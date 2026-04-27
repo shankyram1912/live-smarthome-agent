@@ -142,11 +142,26 @@ async def analyze_camera_feed(device_id: str, user_query: str) -> str:
         
         # 10. Generate content
         logging.info(f"Sending prompt to Gemini for device '{device_id}'...")
-        response = client.models.generate_content(
-            model="gemini-2.5-flash-lite",
-            contents=[camera_image, prompt],
-            config=generation_config
+        
+        # response = client.models.generate_content(
+        #     model="gemini-2.5-flash-lite",
+        #     contents=[camera_image, prompt],
+        #     config=generation_config
+        # )
+        
+        # -------------------------------------------------------
+        # THE FIX: run the blocking SDK call in a thread pool
+        # -------------------------------------------------------
+        loop = asyncio.get_event_loop()
+        sync_fn = functools.partial(
+            _generate_content_sync,
+            client,
+            "gemini-2.5-flash-lite",
+            [camera_image, prompt],
+            generation_config,
         )
+        response = await loop.run_in_executor(None, sync_fn)
+        # -------------------------------------------------------        
         
         # 11. Parse the LLM's JSON Response
         llm_response_dict = json.loads(response.text)
