@@ -120,7 +120,7 @@ def ask_camera_agent(device_id: str, user_query: str) -> str:
             f"CAMERA METADATA:\n{metadata_json_str}\n\n"
             "CRITICAL INSTRUCTIONS:\n"
             "1. GROUNDING: Base your answer STRICTLY on what is clearly visible in the image AND the provided CAMERA METADATA. Do not guess or hallucinate details outside of these two sources.\n"
-            "2. ANSWER: Use the information from the camera feed image to answer the question, by contextually analyzing the data to summarize the situation. E.g. Subject A (based on user query) is doing X (activity) in Y (which room).\n"
+            "2. ANSWER: Use the information from the camera feed image to answer the question, by contextually analyzing the data to summarize the situation. E.g. Subject A (based on user query, address by name where available) is doing X (activity) in Y (which room).\n"
             "3. UNCERTAINTY: If the requested information is not present in the image or metadata, respond appropriately in your response.\n"
             "4. TONE & LENGTH: Keep your response brief, factual, and direct. Dont reference time. Avoid unnecessary conversational filler.\n"
             "5. FORMATTING: Output RAW TEXT ONLY. Do not use Markdown, asterisks, bolding, lists, quotes, or code blocks.\n\n"
