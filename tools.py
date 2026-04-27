@@ -483,8 +483,8 @@ class Tools:
         async def process_camera(camera_id):
             try:
                 # Runs the blocking function in a separate thread
-                response_str = await asyncio.to_thread(analyze_camera_feed, camera_id, userQuery)
-                return json.loads(response_str)
+                response_str = await analyze_camera_feed(camera_id, userQuery)
+                return response_str
             except Exception as e:
                 # ... (error handling)
                 return {"id": camera_id, "error": str(e)}
