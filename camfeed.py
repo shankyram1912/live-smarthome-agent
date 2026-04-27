@@ -18,6 +18,14 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 # Load environment variables from the .env file
 load_dotenv()
 
+def _generate_content_sync(client, model, contents, config):
+    """Pure synchronous wrapper — safe to hand to run_in_executor."""
+    return client.models.generate_content(
+        model=model,
+        contents=contents,
+        config=config,
+    )
+
 async def analyze_camera_feed(device_id: str, user_query: str) -> str:
     """
     Analyzes a camera feed image using Gemini Flash and answers a user query in JSON format.
@@ -141,7 +149,7 @@ async def analyze_camera_feed(device_id: str, user_query: str) -> str:
             max_output_tokens=256 
         )
         
-        # 10. Generate content
+        # 10. Generate content (non-blocking — runs SDK call in thread pool)
         logging.info(f"Sending prompt to Gemini for device '{device_id}'...")
         
         # response = client.models.generate_content(
@@ -152,8 +160,9 @@ async def analyze_camera_feed(device_id: str, user_query: str) -> str:
         
         # -------------------------------------------------------
         # THE FIX: run the blocking SDK call in a thread pool
-        # -------------------------------------------------------
-        loop = asyncio.get_event_loop()
+        # -------------------------------------------------------        
+        
+        loop = asyncio.get_running_loop()
         sync_fn = functools.partial(
             _generate_content_sync,
             client,
@@ -162,7 +171,6 @@ async def analyze_camera_feed(device_id: str, user_query: str) -> str:
             generation_config,
         )
         response = await loop.run_in_executor(None, sync_fn)
-        # -------------------------------------------------------        
         
         # 11. Parse the LLM's JSON Response
         llm_response_dict = json.loads(response.text)
