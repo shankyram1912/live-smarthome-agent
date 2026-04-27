@@ -1466,6 +1466,30 @@
 
         .setting-link-btn:active {
             transform: scale(0.98);
+        }
+        
+        .agent-title {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.6px;
+            color: #FFFFFF;
+            /* Flexbox to align the logo and text side-by-side */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .logo {
+            height: 24px; /* Adjust this to make your logo bigger/smaller */
+            width: auto;
+            /* Adds a clean white background so the black text is visible */
+            background-color: #FFFFFF; 
+            padding: 4px 8px;
+            border-radius: 8px;
+            /* Subtle green glow matching the green leaf icon */
+            box-shadow: 0 4px 12px rgba(153, 204, 51, 0.3); 
+            display: block;
         }        
     </style>
 </head>
@@ -1572,8 +1596,12 @@
         <!-- 1. LEFT PANEL: AI CORE -->
         <div class="glass-panel" id="voice-controller">
             
-            <div class="agent-header">
-                <div class="agent-title">Aris Smart Home AI</div>
+            <div class="agent-header"
+                <div class="agent-title">
+                    <!-- Points to the image in the same folder -->
+                    <img src="/live-smarthome-agent/static/logo.png" alt="Logo" class="logo">
+                    Aris Smart Home AI
+                </div>                
                 <div class="agent-subtitle">ADK Agent (Gemini Live Flash 2.5)</div>
             </div>
 
