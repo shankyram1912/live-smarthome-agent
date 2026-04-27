@@ -97,7 +97,7 @@ def ask_camera_agent(device_id: str, user_query: str) -> str:
         vertexai.init(project=project_id, location=project_location)
         
         # 7. Initialize the requested Gemini Flash model
-        model = GenerativeModel("gemini-2.5-flash")
+        model = GenerativeModel("gemini-2.5-flash-lite")
         
         # 8. Load the local image file
         camera_image = Image.load_from_file(image_path)
