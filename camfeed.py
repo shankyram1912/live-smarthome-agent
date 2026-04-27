@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 # Load environment variables from the .env file
 load_dotenv()
 
-def ask_camera_agent(device_id: str, user_query: str) -> str:
+def analyze_camera_feed(device_id: str, user_query: str) -> str:
     """
     Analyzes a camera feed image using Gemini Flash and answers a user query in JSON format.
     Strictly reads configuration from environment variables and injects camera metadata.
@@ -185,7 +185,7 @@ if __name__ == "__main__":
         try:
             print("\nProcessing... please wait.")
             
-            response_json_string = ask_camera_agent(cam_id, user_question)
+            response_json_string = analyze_camera_feed(cam_id, user_question)
             
             print("\n--- Final JSON Payload ---")
             print(response_json_string)

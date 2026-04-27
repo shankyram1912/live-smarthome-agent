@@ -443,3 +443,39 @@ class Tools:
         except Exception as e:
             logger.error(f"Failed to update lock {id}: {str(e)}")
             return {"error": f"Database update failed: {str(e)}"}         
+        
+    def check_camera(self, userQuery: str, camera_ids: list[str]) -> str:
+        """
+        Analyzes live camera feeds to answer a user's query about their smart home environment.
+
+        Args:
+            userQuery: The question the user is asking about the camera feeds (mandatory).
+            camera_ids: A list/array of exact camera IDs to check, e.g., ["cam-1", "cam-2"] (mandatory).
+        """
+        # Log tool calls
+        print("\n" + "="*50)
+        print(f"[🔧 TOOL EXECUTION] check_camera(camera_ids={camera_ids}, userQuery='{userQuery}')")
+        print("="*50 + "\n", flush=True)   
+        logger.info(f"[🔧 TOOL EXECUTION] check_camera(camera_ids={camera_ids}, userQuery='{userQuery}')")
+
+        results =[]
+        for camera_id in camera_ids:
+            try:
+                # analyze_camera_feed returns a JSON string
+                response_str = analyze_camera_feed(camera_id, userQuery)
+                
+                # Parse it back to a dictionary so we don't end up with nested/escaped JSON strings
+                response_dict = json.loads(response_str)
+                results.append(response_dict)
+                
+            except Exception as e:
+                logger.error(f"Failed to check camera {camera_id}: {str(e)}")
+                # Append a fallback payload if a specific camera fails
+                results.append({
+                    "id": camera_id,
+                    "error": str(e),
+                    "is_user_query_addressed": False
+                })
+
+        # Return the aggregated list as a clean, formatted JSON string
+        return results
