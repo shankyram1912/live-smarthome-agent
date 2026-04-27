@@ -42,6 +42,8 @@ def ask_camera_agent(device_id: str, user_query: str) -> str:
         error_msg = f"Missing required environment variables in .env file: {', '.join(missing_vars)}"
         logging.error(error_msg)
         raise ValueError(error_msg)
+    else:
+        logging.info(f"GOOGLE_CLOUD_PROJECT {GOOGLE_CLOUD_PROJECT}, GOOGLE_CLOUD_LOCATION {GOOGLE_CLOUD_LOCATION}")
         
     # 3. Construct the image path
     image_path = f"./static/camview/{device_id}.jpg"
