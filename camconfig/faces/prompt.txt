@@ -1,0 +1,22 @@
+Task: Generate a realistic smart home security camera still.
+
+Reference Instructions:
+
+Environment: Strictly follow the architectural layout, furniture placement, and lighting of [Reference Image 1: Room].
+
+Subjects: Generate individuals identical in facial features and physical build to the people in [Reference Image 2: Faces].
+
+Visual Style:
+
+Perspective: High-angle, wide-lens view from a top corner.
+
+Quality: CCTV aesthetic; realistic indoor lighting with slight digital sharpening.
+
+Overlay Data: In the top-right corner, overlay the following text in a white, semi-transparent monospaced digital font:
+
+ID: {{CAM_ID}}
+
+TIME: {{TIMESTAMP}} (Format: HH:MM:SS AM/PM)
+
+Scene Description:
+{{DESCRIBE THE ACTION HERE}}
