@@ -2,6 +2,7 @@ import os
 import json
 import logging
 import asyncio
+import functools
 from dotenv import load_dotenv
 
 # Import the unified Google Gen AI SDK
