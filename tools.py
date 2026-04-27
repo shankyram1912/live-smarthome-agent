@@ -4,6 +4,7 @@ import yaml
 import json
 import logging
 import threading
+import asyncio
 from enum import Enum
 from typing import Literal
 from google.cloud import firestore
