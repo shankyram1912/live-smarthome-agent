@@ -1,8 +1,12 @@
 import os
+import json
 import logging
 from dotenv import load_dotenv
 import vertexai
 from vertexai.generative_models import GenerativeModel, Image, GenerationConfig
+
+# Import the camera simulation metadata
+from camsim import CAM_SIM
 
 # Setup basic logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -12,8 +16,8 @@ load_dotenv()
 
 def ask_camera_agent(device_id: str, user_query: str) -> str:
     """
-    Analyzes a camera feed image using Vertex AI Gemini 3 Flash and answers a user query.
-    Strictly reads configuration from environment variables.
+    Analyzes a camera feed image using Vertex AI Gemini Flash and answers a user query.
+    Strictly reads configuration from environment variables and injects camera metadata.
     
     Args:
         device_id (str): The ID of the camera (e.g., 'cam-1').
@@ -54,44 +58,81 @@ def ask_camera_agent(device_id: str, user_query: str) -> str:
         logging.error(error_msg)
         raise FileNotFoundError(error_msg)
 
+    # 5. Retrieve Metadata from mapping.json and CAM_SIM
+    mapping_path = "./static/camview/mapping.json"
+    metadata_json_str = "{}"
+    
+    if os.path.exists(mapping_path):
+        try:
+            with open(mapping_path, 'r') as f:
+                mapping = json.load(f)
+            
+            # Retrieve the original filename mapped to this device's current image
+            target_key = f"{device_id}.jpg"
+            original_filename = mapping.get(target_key)
+            
+            if original_filename:
+                # Find the matching dictionary in CAM_SIM
+                for sim in CAM_SIM:
+                    if sim.get("filename") == original_filename:
+                        # Create a copy so we don't modify the original CAM_SIM dictionary
+                        llm_metadata = sim.copy()
+                        
+                        # Remove the filename before passing to LLM
+                        llm_metadata.pop("filename", None)
+                        
+                        # Convert the matched dict to a formatted JSON string
+                        metadata_json_str = json.dumps(llm_metadata, indent=2)
+                        logging.info(f"Successfully loaded metadata for {device_id} (excluded filename from prompt)")
+                        break
+            else:
+                logging.warning(f"Key '{target_key}' not found in mapping.json")
+        except Exception as e:
+            logging.error(f"Error reading mapping or metadata: {e}")
+    else:
+        logging.warning(f"Mapping file not found at {mapping_path}")
+
     try:
-        # 5. Initialize Vertex AI with env variables
+        # 6. Initialize Vertex AI with env variables
         vertexai.init(project=project_id, location=project_location)
         
-        # 6. Initialize the requested Gemini Flash model
+        # 7. Initialize the requested Gemini Flash model
         model = GenerativeModel("gemini-2.5-flash")
         
-        # 7. Load the local image file
+        # 8. Load the local image file
         camera_image = Image.load_from_file(image_path)
         
-        # 8. Construct the strict prompt (Added Rule #4)
+        # 9. Construct the strict prompt including the dynamic metadata
         prompt = (
             "You are a precise and helpful smart home AI assistant. "
             "Your task is to analyze the provided live camera feed image and answer the user's question.\n\n"
+            "Below is the system metadata associated with this camera feed. Use this data to accurately identify "
+            "people (e.g., by name/label), timestamps, locations, and security statuses:\n"
+            f"CAMERA METADATA:\n{metadata_json_str}\n\n"
             "CRITICAL INSTRUCTIONS:\n"
-            "1. GROUNDING: Base your answer STRICTLY on what is clearly visible in the image. Do not guess, assume, or hallucinate details outside the frame.\n"
-            "2. UNCERTAINTY: If the requested information is not present, obscured, or unclear, explicitly state: 'I cannot clearly see that in the current camera feed.'\n"
-            "3. TONE & LENGTH: Keep your response brief, factual, and direct. Avoid unnecessary conversational filler.\n"
-            "4. FORMATTING: Output RAW TEXT ONLY. Do not use Markdown, asterisks, bolding, lists, quotes, or code blocks.\n\n"
+            "1. GROUNDING: Base your answer STRICTLY on what is clearly visible in the image AND the provided CAMERA METADATA. Do not guess or hallucinate details outside of these two sources.\n"
+            "2. ANSWER: Use the information from the camera feed image to answer the question, by contexually anlyzing the data to summarize the situation."
+            "3. UNCERTAINTY: If the requested information is not present in the image or metadata, explicitly state: 'I cannot clearly see that in the current camera feed.'\n"
+            "4. TONE & LENGTH: Keep your response brief, factual, and direct. Avoid unnecessary conversational filler.\n"
+            "5. FORMATTING: Output RAW TEXT ONLY. Do not use Markdown, asterisks, bolding, lists, quotes, or code blocks.\n\n"
             f"USER QUESTION: \"{user_query}\"\n"
             "ANSWER:"
         )
 
-        # 9. Enforce Generation Configuration
+        # 10. Enforce Generation Configuration
         generation_config = GenerationConfig(
             response_mime_type="text/plain",
             temperature=0.2, # Low temperature makes the output highly deterministic and factual
             max_output_tokens=256 # Caps the length of the response
         )
         
-        # 10. Generate content with the configuration applied
+        # 11. Generate content with the configuration applied
         logging.info(f"Sending prompt to Gemini for device '{device_id}'...")
-        response = model.generate_content(
-            [camera_image, prompt],
+        response = model.generate_content([camera_image, prompt],
             generation_config=generation_config
         )
         
-        # 11. Return the text result, stripping any accidental trailing/leading whitespace
+        # 12. Return the text result, stripping any accidental trailing/leading whitespace
         return response.text.strip()
         
     except Exception as e:
@@ -104,7 +145,7 @@ def ask_camera_agent(device_id: str, user_query: str) -> str:
 # ==========================================
 if __name__ == "__main__":
     try:
-        response_text = ask_camera_agent("cam-1", "Show me the kitchen camera feed?")
+        response_text = ask_camera_agent("cam-1", "Show me the kitchen camera")
         print("\n--- Gemini Response ---")
         print(response_text)
     except Exception as ex:
