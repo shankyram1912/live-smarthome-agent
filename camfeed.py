@@ -163,7 +163,7 @@ async def analyze_camera_feed(device_id: str, user_query: str) -> str:
         }
         
         # 13. Return formatted JSON String
-        return json.dumps(final_payload, indent=4)
+        return final_payload
         
     except json.JSONDecodeError as e:
         logging.error(f"Failed to parse JSON returned from Gemini: {e}")
