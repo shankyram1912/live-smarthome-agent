@@ -8,6 +8,7 @@ from enum import Enum
 from typing import Literal
 from google.cloud import firestore
 from dotenv import load_dotenv
+from camfeed import analyze_camera_feed
 
 # ==========================================
 # Module-Level Setup
