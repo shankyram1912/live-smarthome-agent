@@ -144,9 +144,25 @@ def ask_camera_agent(device_id: str, user_query: str) -> str:
 # Example Usage:
 # ==========================================
 if __name__ == "__main__":
-    try:
-        response_text = ask_camera_agent("cam-1", "Show me the kitchen camera")
-        print("\n--- Gemini Response ---")
-        print(response_text)
-    except Exception as ex:
-        print(f"\nExecution failed: {ex}")
+    print("--- Camera Agent Tester ---")
+    
+    # Capture the camera ID from the user
+    cam_id = input("Enter Camera ID (e.g., cam-1): ").strip()
+    
+    # Capture the question from the user
+    user_question = input("Enter your question: ").strip()
+    
+    # Ensure both inputs were provided
+    if not cam_id or not user_question:
+        print("\nError: Both Camera ID and Question are required. Exiting.")
+    else:
+        try:
+            print("\nProcessing... please wait.")
+            # Pass the user's inputs dynamically to the function
+            response_text = ask_camera_agent(cam_id, user_question)
+            
+            print("\n--- Gemini Response ---")
+            print(response_text)
+            
+        except Exception as ex:
+            print(f"\nExecution failed: {ex}")
