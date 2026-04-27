@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 # Load environment variables from the .env file
 load_dotenv()
 
-def analyze_camera_feed(device_id: str, user_query: str) -> str:
+async def analyze_camera_feed(device_id: str, user_query: str) -> str:
     """
     Analyzes a camera feed image using Gemini Flash and answers a user query in JSON format.
     Strictly reads configuration from environment variables and injects camera metadata.
