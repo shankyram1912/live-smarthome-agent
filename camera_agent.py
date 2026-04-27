@@ -2,8 +2,10 @@ import os
 import json
 import logging
 from dotenv import load_dotenv
-import vertexai
-from vertexai.generative_models import GenerativeModel, Image, GenerationConfig
+
+# NEW: Import the unified Google Gen AI SDK
+from google import genai
+from google.genai import types
 
 # Import the camera simulation metadata
 from camsim import CAM_SIM
@@ -93,16 +95,23 @@ def ask_camera_agent(device_id: str, user_query: str) -> str:
         logging.warning(f"Mapping file not found at {mapping_path}")
 
     try:
-        # 6. Initialize Vertex AI with env variables
-        vertexai.init(project=project_id, location=project_location)
+        # 6. Initialize the new genai Client using Vertex AI parameters
+        client = genai.Client(
+            vertexai=True, 
+            project=project_id, 
+            location=project_location
+        )
         
-        # 7. Initialize the requested Gemini Flash model
-        model = GenerativeModel("gemini-2.5-flash-lite")
+        # 7. Read the local image as bytes and create a Part object
+        with open(image_path, "rb") as image_file:
+            image_bytes = image_file.read()
+            
+        camera_image = types.Part.from_bytes(
+            data=image_bytes,
+            mime_type="image/jpeg",
+        )
         
-        # 8. Load the local image file
-        camera_image = Image.load_from_file(image_path)
-        
-        # 9. Construct the strict prompt including the dynamic metadata
+        # 8. Construct the strict prompt including the dynamic metadata
         prompt = (
             "You are a precise and helpful smart home AI assistant. "
             "Your task is to analyze the provided live camera feed image and answer the user's question.\n\n"
@@ -111,33 +120,35 @@ def ask_camera_agent(device_id: str, user_query: str) -> str:
             f"CAMERA METADATA:\n{metadata_json_str}\n\n"
             "CRITICAL INSTRUCTIONS:\n"
             "1. GROUNDING: Base your answer STRICTLY on what is clearly visible in the image AND the provided CAMERA METADATA. Do not guess or hallucinate details outside of these two sources.\n"
-            "2. ANSWER: Use the information from the camera feed image to answer the question, by contexually anlyzing the data to summarize the situation. E.g. Subject A is doing X."
-            "3. UNCERTAINTY: If the requested information is not present in the image or metadata, respomd appropriately in your response'\n"
+            "2. ANSWER: Use the information from the camera feed image to answer the question, by contextually analyzing the data to summarize the situation. E.g. Subject A is doing X.\n"
+            "3. UNCERTAINTY: If the requested information is not present in the image or metadata, respond appropriately in your response.\n"
             "4. TONE & LENGTH: Keep your response brief, factual, and direct. Dont reference time. Avoid unnecessary conversational filler.\n"
             "5. FORMATTING: Output RAW TEXT ONLY. Do not use Markdown, asterisks, bolding, lists, quotes, or code blocks.\n\n"
             f"USER QUESTION: \"{user_query}\"\n"
             "ANSWER:"
         )
 
-        # 10. Enforce Generation Configuration
-        generation_config = GenerationConfig(
+        # 9. Enforce Generation Configuration
+        generation_config = types.GenerateContentConfig(
             response_mime_type="text/plain",
             temperature=0.2, # Low temperature makes the output highly deterministic and factual
             max_output_tokens=256 # Caps the length of the response
         )
         
-        # 11. Generate content with the configuration applied
+        # 10. Generate content with the configuration applied
         logging.info(f"Sending prompt to Gemini for device '{device_id}'...")
-        response = model.generate_content([camera_image, prompt],
-            generation_config=generation_config
+        response = client.models.generate_content(
+            model="gemini-2.5-flash-lite",
+            contents=[camera_image, prompt],
+            config=generation_config
         )
         
-        # 12. Return the text result, stripping any accidental trailing/leading whitespace
+        # 11. Return the text result, stripping any accidental trailing/leading whitespace
         return response.text.strip()
         
     except Exception as e:
         # Log any API or connection errors, then re-raise the exception
-        logging.error(f"An error occurred while communicating with Vertex AI: {str(e)}")
+        logging.error(f"An error occurred while communicating with Google Gen AI: {str(e)}")
         raise e
 
 # ==========================================
