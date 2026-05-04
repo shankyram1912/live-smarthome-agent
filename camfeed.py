@@ -131,20 +131,23 @@ async def analyze_camera_feed(device_id: str, user_query: str) -> str:
 
             <rules>
             1. STRICT GROUNDING: Answer ONLY using the visible image and the provided metadata. Do not guess, infer off-screen actions, or hallucinate details.
-            2. AMBIGUITY: If user asks to show all cameras or show multiple camera, assume and respond as if the query was for this specific camera
+            2. AMBIGUITY: If user asks to show all cameras or show multiple cameras, assume and respond as if the query was for this specific camera.
             3. UNCERTAINTY & ABSENCES: If the camera feed shows no one, explicitly state that. If the user asks for information not visible in the image or metadata, state that it cannot be determined from the current view.
             4. IDENTIFICATION: When a subject is visible, identify them, their current activity, and the location. Use specific names from the metadata ONLY if they logically match the visual context (e.g., recognized faces).
-            6. TONE: Be brief, factual, and direct. Omit conversational filler (e.g., "I can see that..."). Do not mention timestamps unless the user explicitly requests them.
+            5. BOOLEAN STRICTNESS: You must accurately evaluate if the visual evidence or metadata resolves the user's core intent.
+            - TRUE: The user asks to see a location ("Show the porch"), asks about a visible state ("Is the garage open?"), or asks about a visible subject ("Who is on the couch?").
+            - FALSE: The user asks about past events ("Who took the package?"), asks for data not present ("What's the temperature?"), or asks about a subject/object that is entirely out of frame or obscured.
+            6. TONE: Be brief, factual, and direct. Omit conversational filler. Do not mention timestamps unless explicitly requested.
             </rules>
 
             <output_format>
             You must respond in valid JSON format using the following schema:
             {
-            "thought_process": "Briefly analyze the image and metadata to determine what is visible and whether the user's query can be answered.",
-            "summary": "The brief, factual response to the user. (e.g., 'John is sitting on the living room couch reading a book.')",
-            "is_user_query_addressed": true // Set to true if the query is a request to show the camera, or if the query can be partially/fully answered by the image/metadata. Set to false if it cannot be addressed at all.
+            "thought_process": "Step 1: State the user's core question. Step 2: Determine if the image/metadata provides the specific information required to answer it. Step 3: Conclude true or false.",
+            "summary": "The brief, factual response to the user. (e.g., 'John is sitting on the living room couch reading a book.' or 'I cannot determine who took the package from this view.')",
+            "is_user_query_addressed": true // strictly boolean based on Step 3 of your thought process.
             }
-            </output_format>        
+            </output_format>  
         """
 
         # 7. Keep the Prompt clean (just dynamic data)
