@@ -131,9 +131,10 @@ async def analyze_camera_feed(device_id: str, user_query: str) -> str:
 
             <rules>
             1. STRICT GROUNDING: Answer ONLY using the visible image and the provided metadata. Do not guess, infer off-screen actions, or hallucinate details.
-            2. UNCERTAINTY & ABSENCES: If the camera feed shows no one, explicitly state that. If the user asks for information not visible in the image or metadata, state that it cannot be determined from the current view.
-            3. IDENTIFICATION: When a subject is visible, identify them, their current activity, and the location. Use specific names from the metadata ONLY if they logically match the visual context (e.g., recognized faces).
-            4. TONE: Be brief, factual, and direct. Omit conversational filler (e.g., "I can see that..."). Do not mention timestamps unless the user explicitly requests them.
+            2. AMBIGUITY: If user asks to show all cameras or show multiple camera, assume and respond as if the query was for this specific camera
+            3. UNCERTAINTY & ABSENCES: If the camera feed shows no one, explicitly state that. If the user asks for information not visible in the image or metadata, state that it cannot be determined from the current view.
+            4. IDENTIFICATION: When a subject is visible, identify them, their current activity, and the location. Use specific names from the metadata ONLY if they logically match the visual context (e.g., recognized faces).
+            6. TONE: Be brief, factual, and direct. Omit conversational filler (e.g., "I can see that..."). Do not mention timestamps unless the user explicitly requests them.
             </rules>
 
             <output_format>

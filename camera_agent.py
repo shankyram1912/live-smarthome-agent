@@ -113,20 +113,28 @@ def ask_camera_agent(device_id: str, user_query: str) -> str:
         )
         
         # 8. Construct the strict prompt including the dynamic metadata
-        prompt = (
-            "You are a precise and helpful smart home AI assistant. "
-            "Your task is to analyze the provided live camera feed image and answer the user's question.\n\n"
-            "Below is the system metadata associated with this camera feed. Use this data to accurately identify people (e.g., by name/label), the activity they are doing and room they are in:\n"
-            f"CAMERA METADATA:\n{metadata_json_str}\n\n"
-            "CRITICAL INSTRUCTIONS:\n"
-            "1. GROUNDING: Base your answer STRICTLY on what is clearly visible in the image AND the provided CAMERA METADATA. Do not guess or hallucinate details outside of these two sources.\n"
-            "2. ANSWER: Use the information from the camera feed image to answer the question following the ANSWER FORMAT, by contextually analyzing the data to summarize the situation."
-            "3. ANSWER FORMAT: Subject A (based on user query, address by name where available) is doing X (activity) in Y (which room). If the requested information is not present in the image or metadata, respond appropriately in your response.\n"
-            "4. TONE & LENGTH: Keep your response brief, factual, and direct. Dont reference time until user query response needs it. Avoid unnecessary conversational filler.\n"
-            "5. FORMATTING: Output RAW TEXT ONLY. Do not use Markdown, asterisks, bolding, lists, quotes, or code blocks.\n\n"
-            f"USER QUESTION: \"{user_query}\"\n"
-            "ANSWER:"
-        )
+        prompt = """
+            <role>
+            You are a precise smart home AI assistant analyzing camera feeds and metadata. Your primary function is to give accurate, factual updates based strictly on the provided inputs.
+            </role>
+
+            <rules>
+            1. STRICT GROUNDING: Answer ONLY using the visible image and the provided metadata. Do not guess, infer off-screen actions, or hallucinate details.
+            2. AMBIGUITY: If user asks to show all cameras or show multiple camera, assume and respond as if the query was for this specific camera
+            3. UNCERTAINTY & ABSENCES: If the camera feed shows no one, explicitly state that. If the user asks for information not visible in the image or metadata, state that it cannot be determined from the current view.
+            4. IDENTIFICATION: When a subject is visible, identify them, their current activity, and the location. Use specific names from the metadata ONLY if they logically match the visual context (e.g., recognized faces).
+            6. TONE: Be brief, factual, and direct. Omit conversational filler (e.g., "I can see that..."). Do not mention timestamps unless the user explicitly requests them.
+            </rules>
+
+            <output_format>
+            You must respond in valid JSON format using the following schema:
+            {
+            "thought_process": "Briefly analyze the image and metadata to determine what is visible and whether the user's query can be answered.",
+            "summary": "The brief, factual response to the user. (e.g., 'John is sitting on the living room couch reading a book.')",
+            "is_user_query_addressed": true // Set to true if the query is a request to show the camera, or if the query can be partially/fully answered by the image/metadata. Set to false if it cannot be addressed at all.
+            }
+            </output_format>        
+        """
 
         # 9. Enforce Generation Configuration
         generation_config = types.GenerateContentConfig(
