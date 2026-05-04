@@ -144,7 +144,7 @@ async def analyze_camera_feed(device_id: str, user_query: str) -> str:
             You must respond in valid JSON format using the following schema:
             {
             "thought_process": "Step 1: State the user's core request or intent. Step 2: Determine if the image/metadata successfully fulfills this request or provides the requested information. Step 3: Conclude true or false.",
-            "summary": "The brief, factual response to the user. (e.g., 'Here is the current view of the porch.' or 'John is sitting on the couch.')",
+            "response": "The brief, factual response to the user without your internal thinking. (e.g., 'Here is the current view of the porch.' or 'John is sitting on the couch.')",
             "is_user_query_addressed": true // strictly boolean based on Step 3 of your thought process.
             }
             </output_format>
@@ -160,10 +160,11 @@ async def analyze_camera_feed(device_id: str, user_query: str) -> str:
         response_schema = {
             "type": "OBJECT",
             "properties": {
+                "thought_process": {"type": "STRING"},
                 "response": {"type": "STRING"},
                 "is_user_query_addressed": {"type": "BOOLEAN"}
             },
-            "required": ["response", "is_user_query_addressed"]
+            "required": ["thought_process", "response", "is_user_query_addressed"]
         }
 
         # 9. Configure Generation (Enforcing JSON Output)
