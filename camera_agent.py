@@ -116,8 +116,7 @@ def ask_camera_agent(device_id: str, user_query: str) -> str:
         prompt = (
             "You are a precise and helpful smart home AI assistant. "
             "Your task is to analyze the provided live camera feed image and answer the user's question.\n\n"
-            "Below is the system metadata associated with this camera feed. Use this data to accurately identify "
-            "people (e.g., by name/label), timestamps, locations, and security statuses:\n"
+            "Below is the system metadata associated with this camera feed. Use this data to accurately identify people (e.g., by name/label), the activity they are doing and room they are in:\n"
             f"CAMERA METADATA:\n{metadata_json_str}\n\n"
             "CRITICAL INSTRUCTIONS:\n"
             "1. GROUNDING: Base your answer STRICTLY on what is clearly visible in the image AND the provided CAMERA METADATA. Do not guess or hallucinate details outside of these two sources.\n"
