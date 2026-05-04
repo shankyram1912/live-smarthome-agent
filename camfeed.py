@@ -113,16 +113,42 @@ async def analyze_camera_feed(device_id: str, user_query: str) -> str:
         )
         
         # 6. Define the strict System Instructions
-        system_instruction = (
-            "You are a precise smart home AI assistant analyzing camera feeds and metadata. "
-            "CRITICAL INSTRUCTIONS:\n"
-            "1. GROUNDING: Answer STRICTLY using the visible image and the provided metadata. No guessing.\n"
-            "2. ANALYZE: Analyze the image to determine the best response for the user query"
-            "3. SUMMARIZE: If the feed shows a subject; identify the subject their activity, and the location. Use specific names from the metadata if they match the visual context.\n"
-            "4. UNCERTAINTY: If the camera feed shows no one, state that. If the requested information is not visible in the image or metadata, state that contexually.'\n"
-            "5. TONE: Be brief, factual, and direct. Omit conversational filler. Do not mention timestamps unless explicitly asked.\n"
-            "6. STATUS: Set 'is_user_query_addressed' to true if the user's query can be partially or fully answered by the image/metadata context. Set to false if it cannot be addressed."
-        )
+        # system_instruction = (
+        #         "You are a precise smart home AI assistant analyzing camera feeds and metadata. "
+        #         "CRITICAL INSTRUCTIONS:\n"
+        #         "1. GROUNDING: Answer STRICTLY using the visible image and the provided metadata. No guessing.\n"
+        #         "2. ANALYZE: Analyze the image to determine the best response for the user query"
+        #         "3. SUMMARIZE: If the feed shows a subject; identify the subject their activity, and the location. Use specific names from the metadata if they match the visual context.\n"
+        #         "4. UNCERTAINTY: If the camera feed shows no one, state that. If the requested information is not visible in the image or metadata, state that contexually.'\n"
+        #         "5. TONE: Be brief, factual, and direct. Omit conversational filler. Do not mention timestamps unless explicitly asked.\n"
+        #         "6. IS USER QUERY ADDRESSED: Set is_user_query_addressed to true if the user's query is to show the camera or can user query can be partially or fully answered by the image/metadata context. Set to false if it cannot be addressed at all."
+        # )
+        
+        system_instruction = """
+            <role>
+            You are a precise smart home AI assistant analyzing camera feeds and metadata. Your primary function is to give accurate, factual updates based strictly on the provided inputs.
+            </role>
+
+            <rules>
+            1. STRICT GROUNDING: Answer ONLY using the visible image and the provided metadata. Do not guess, infer off-screen actions, or hallucinate details.
+            2. AMBIGUITY: If user asks to show all cameras or show multiple cameras, assume and respond as if the query was for this specific camera.
+            3. UNCERTAINTY & ABSENCES: If the camera feed shows no one, explicitly state that. If the user asks for information not visible in the image or metadata, state that it cannot be determined from the current view.
+            4. IDENTIFICATION: When a subject is visible, identify them, their current activity, and the location. Use specific names from the metadata ONLY if they logically match the visual context (e.g., recognized faces).
+            5. BOOLEAN STRICTNESS: You must accurately evaluate if the visual evidence or metadata fulfills the user's core request.
+            - TRUE: The user issues a command to view the feed ("Show the porch", "Show cameras"), asks about a visible state ("Is the garage open?"), or asks about a visible subject ("Who is on the couch?"). Commands to show the camera are ALWAYS considered fulfilled (TRUE).
+            - FALSE: The user asks about past events ("Who took the package?"), asks for data not present ("What's the temperature?"), or asks about a subject/object that is entirely out of frame or obscured.
+            6. TONE: Be brief, factual, and direct. Omit conversational filler. Do not mention timestamps unless explicitly requested.
+            </rules>
+
+            <output_format>
+            You must respond in valid JSON format using the following schema:
+            {
+            "thought_process": "Step 1: State the user's core request or intent. Step 2: Determine if the image/metadata successfully fulfills this request or provides the requested information. Step 3: Conclude true or false.",
+            "response": "The brief, factual response to the user without your internal thinking. (e.g., 'Here is the current view of the porch.' or 'John is sitting on the couch.')",
+            "is_user_query_addressed": true // strictly boolean based on Step 3 of your thought process.
+            }
+            </output_format>
+        """
 
         # 7. Keep the Prompt clean (just dynamic data)
         prompt = (
@@ -134,10 +160,11 @@ async def analyze_camera_feed(device_id: str, user_query: str) -> str:
         response_schema = {
             "type": "OBJECT",
             "properties": {
+                "thought_process": {"type": "STRING"},
                 "response": {"type": "STRING"},
                 "is_user_query_addressed": {"type": "BOOLEAN"}
             },
-            "required": ["response", "is_user_query_addressed"]
+            "required": ["thought_process", "response", "is_user_query_addressed"]
         }
 
         # 9. Configure Generation (Enforcing JSON Output)
@@ -145,7 +172,7 @@ async def analyze_camera_feed(device_id: str, user_query: str) -> str:
             system_instruction=system_instruction,
             response_mime_type="application/json", # Forces JSON Response
             response_schema=response_schema,       # Enforces schema structure
-            temperature=0.2, 
+            temperature=0.1, 
             max_output_tokens=256 
         )
         
