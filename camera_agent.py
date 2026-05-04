@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+import config
 from dotenv import load_dotenv
 
 # NEW: Import the unified Google Gen AI SDK
@@ -138,7 +139,7 @@ def ask_camera_agent(device_id: str, user_query: str) -> str:
         # 10. Generate content with the configuration applied
         logging.info(f"Sending prompt to Gemini for device '{device_id}'...")
         response = client.models.generate_content(
-            model="gemini-2.5-flash-lite",
+            model=config.SUBAGENT_MODEL,
             contents=[camera_image, prompt],
             config=generation_config
         )

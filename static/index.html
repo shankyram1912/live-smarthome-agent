@@ -1496,7 +1496,84 @@
             box-shadow: 0 4px 12px rgba(153, 204, 51, 0.3); 
             display: block;
             align-self: center;
-        }        
+        }
+        
+        /* --- CAMERA CAROUSEL MODAL --- */
+        #camera-modal-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            z-index: 10000; justify-content: center; align-items: center;
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+        #camera-modal-overlay.active { display: flex; opacity: 1; }
+
+        .camera-modal-box {
+            width: 90%; max-width: 600px; background: #141416;
+            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.9), inset 0 1px 1px rgba(255,255,255,0.15);
+            display: flex; flex-direction: column; overflow: hidden;
+            transform: scale(0.95); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        #camera-modal-overlay.active .camera-modal-box { transform: scale(1); }
+
+        .camera-modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 16px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); background: rgba(0,0,0,0.4);
+        }
+
+        .camera-modal-title-group { display: flex; align-items: center; gap: 12px; }
+
+        .camera-status-dot {
+            width: 10px; height: 10px; border-radius: 50%;
+            background: var(--apple-green); box-shadow: 0 0 10px var(--apple-green-glow);
+        }
+
+        .camera-modal-title { font-size: 18px; font-weight: 700; color: #fff; letter-spacing: -0.3px; }
+
+        .camera-id-pill {
+            font-family: var(--mono); font-size: 11px; font-weight: 600; padding: 4px 10px;
+            border-radius: 8px; background: rgba(255,255,255,0.1); color: var(--text-secondary);
+        }
+
+        .camera-close-btn {
+            background: rgba(255,255,255,0.1); border: none; width: 32px; height: 32px;
+            border-radius: 16px; color: #fff; font-size: 20px; line-height: 1;
+            cursor: pointer; display: flex; justify-content: center; align-items: center; transition: all 0.2s;
+        }
+        .camera-close-btn:hover { background: rgba(255,69,58,0.2); color: var(--apple-red); transform: rotate(90deg); }
+
+        .camera-modal-body {
+            position: relative; width: 100%; aspect-ratio: 4/3; background: #000;
+            display: flex; align-items: center; justify-content: center; overflow: hidden;
+        }
+
+        .camera-view-img { width: 100%; height: 100%; object-fit: cover; }
+
+        .camera-nav-btn {
+            position: absolute; top: 50%; transform: translateY(-50%);
+            background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: #fff;
+            width: 40px; height: 40px; border-radius: 20px; cursor: pointer;
+            display: flex; justify-content: center; align-items: center;
+            backdrop-filter: blur(8px); transition: all 0.2s; z-index: 10;
+        }
+        .camera-nav-btn:hover { background: rgba(255,255,255,0.2); transform: translateY(-50%) scale(1.1); }
+        .camera-nav-btn.left { left: 16px; }
+        .camera-nav-btn.right { right: 16px; }
+        .camera-nav-btn[disabled] { opacity: 0.3; pointer-events: none; }
+
+        .camera-overlay-stats {
+            position: absolute; top: 16px; right: 16px; background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.1);
+            padding: 8px 12px; border-radius: 8px; font-family: var(--mono);
+            font-size: 11px; color: rgba(255,255,255,0.8); text-align: right; line-height: 1.4;
+        }
+
+        .camera-response-text {
+            padding: 16px 20px; background: rgba(0,0,0,0.3); font-size: 14px;
+            color: var(--text-primary); border-top: 1px solid rgba(255,255,255,0.08);
+            line-height: 1.5; font-weight: 500;
+        }
+
     </style>
 </head>
 
@@ -1743,6 +1820,35 @@
             <div id="modal-log-slot" class="modal-body">
                 <!-- Log container gets MOVED here when opened -->
             </div>
+        </div>
+    </div>
+    
+    <!-- CAMERA CAROUSEL MODAL -->
+    <div id="camera-modal-overlay">
+        <div class="camera-modal-box">
+            <div class="camera-modal-header">
+                <div class="camera-modal-title-group">
+                    <div class="camera-status-dot"></div>
+                    <div class="camera-modal-title" id="cam-modal-title">Kitchen View</div>
+                    <div class="camera-id-pill" id="cam-modal-id">cam-1</div>
+                </div>
+                <button class="camera-close-btn" id="cam-modal-close">&times;</button>
+            </div>
+            <div class="camera-modal-body">
+                <img id="cam-modal-img" class="camera-view-img" src="" alt="Camera Stream">
+                <div class="camera-overlay-stats">
+                    ID: <span id="cam-overlay-id">cam-1</span><br>
+                    ROOM: <span id="cam-overlay-room">Kitchen</span><br>
+                    TIME: <span id="cam-overlay-time">10:30:05 AM</span>
+                </div>
+                <button class="camera-nav-btn left" id="cam-modal-prev">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                </button>
+                <button class="camera-nav-btn right" id="cam-modal-next">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </button>
+            </div>
+            <div class="camera-response-text" id="cam-modal-response"></div>
         </div>
     </div>    
 
@@ -2067,6 +2173,111 @@
                 'check_camera', 'check_notifications', 'find_people'
             ])
         };
+
+        // --- 8. CAMERA CAROUSEL EXPORT ---
+        let currentCameraList = [];
+        let currentCameraIndex = 0;
+
+        window.showCameraModal = function(payload) {
+            let data = payload;
+            // Parse if string
+            if (typeof payload === 'string') {
+                try { data = JSON.parse(payload); } catch (e) { console.error("Failed to parse camera payload"); return; }
+            }
+
+            // Filter array where is_user_query_addressed is true
+            const results = data.result || [];
+            currentCameraList = results.filter(cam => cam.is_user_query_addressed === true);
+            
+            // Abort if nothing matches
+            if (currentCameraList.length === 0) return;
+
+            currentCameraIndex = 0;
+            updateCameraModalView();
+
+            const overlay = document.getElementById('camera-modal-overlay');
+            overlay.style.display = 'flex';
+            setTimeout(() => overlay.classList.add('active'), 10);
+        };
+
+        function updateCameraModalView() {
+            if (currentCameraList.length === 0) return;
+            
+            const cam = currentCameraList[currentCameraIndex];
+            
+            // Update Header
+            document.getElementById('cam-modal-title').innerText = `${cam.room} View`;
+            document.getElementById('cam-modal-id').innerText = cam.id;
+            
+            // Update Image Overlay
+            document.getElementById('cam-overlay-id').innerText = cam.id;
+            document.getElementById('cam-overlay-room').innerText = cam.room;
+            document.getElementById('cam-overlay-time').innerText = cam.timestamp || new Date().toLocaleTimeString();
+            
+            // Update Context Response
+            document.getElementById('cam-modal-response').innerText = cam.response || '';
+
+            // Update Image with Cache-Busting
+            const imgEl = document.getElementById('cam-modal-img');
+            imgEl.src = `/live-smarthome-agent/static/camview/${cam.id}.jpg?t=${Date.now()}`;
+
+            // Manage Navigation Buttons
+            const prevBtn = document.getElementById('cam-modal-prev');
+            const nextBtn = document.getElementById('cam-modal-next');
+
+            if (currentCameraList.length <= 1) {
+                prevBtn.style.display = 'none';
+                nextBtn.style.display = 'none';
+            } else {
+                prevBtn.style.display = 'flex';
+                nextBtn.style.display = 'flex';
+                
+                if (currentCameraIndex === 0) prevBtn.setAttribute('disabled', 'true');
+                else prevBtn.removeAttribute('disabled');
+                
+                if (currentCameraIndex === currentCameraList.length - 1) nextBtn.setAttribute('disabled', 'true');
+                else nextBtn.removeAttribute('disabled');
+            }
+        }
+
+        // Bind Events for the Camera Modal
+        document.addEventListener('DOMContentLoaded', () => {
+            const closeBtn = document.getElementById('cam-modal-close');
+            const overlay = document.getElementById('camera-modal-overlay');
+            const prevBtn = document.getElementById('cam-modal-prev');
+            const nextBtn = document.getElementById('cam-modal-next');
+
+            if(closeBtn) {
+                closeBtn.addEventListener('click', () => {
+                    overlay.classList.remove('active');
+                    setTimeout(() => overlay.style.display = 'none', 300);
+                });
+            }
+            
+            if(overlay) {
+                overlay.addEventListener('click', (e) => {
+                    if (e.target === overlay) closeBtn.click();
+                });
+            }
+
+            if(prevBtn) {
+                prevBtn.addEventListener('click', () => {
+                    if (currentCameraIndex > 0) {
+                        currentCameraIndex--;
+                        updateCameraModalView();
+                    }
+                });
+            }
+
+            if(nextBtn) {
+                nextBtn.addEventListener('click', () => {
+                    if (currentCameraIndex < currentCameraList.length - 1) {
+                        currentCameraIndex++;
+                        updateCameraModalView();
+                    }
+                });
+            }
+        });        
 
         /**
         * Pure function to format tool payloads securely.

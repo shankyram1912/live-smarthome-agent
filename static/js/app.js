@@ -349,6 +349,18 @@ async function connectWebsocket() {
                             console.warn("addDynamicHeroAction is not defined on the window object.");
                         }
                     }
+                    // Catch the check_camera array response
+                    else if (part.functionResponse.name === "check_camera") {
+                        const payload = part.functionResponse.response;
+                        console.log(`📹 Camera Check Event Detected:`, payload);
+                        
+                        if (typeof window.showCameraModal === 'function') {
+                            // Trigger the new carousel modal we just built
+                            window.showCameraModal(payload);
+                        } else {
+                            console.warn("showCameraModal is not defined on the window object.");
+                        }
+                    }
                 }
             });
         }
