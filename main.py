@@ -59,6 +59,22 @@ app.add_middleware(
 static_dir = Path(__file__).parent / "static"
 app.mount("/live-smarthome-agent/static", StaticFiles(directory=static_dir), name="static")
 
+# Define the headers once to keep things clean
+NO_CACHE_HEADERS = {
+    "Cache-Control": "no-cache, no-store, must-revalidate",
+    "Pragma": "no-cache",
+    "Expires": "0",
+}
+
+@app.middleware("http")
+async def add_cache_control_header(request: Request, call_next):
+    response = await call_next(request)
+    # Target only the images inside the static camview directory
+    if request.url.path.startswith("/live-smarthome-agent/static/camview/"):
+        for key, value in NO_CACHE_HEADERS.items():
+            response.headers[key] = value
+    return response
+
 # ========================================
 # Front End Endpoints
 # ========================================
@@ -66,17 +82,17 @@ app.mount("/live-smarthome-agent/static", StaticFiles(directory=static_dir), nam
 @app.get("/live-smarthome-agent")
 async def root():
     """Serve the index.html page."""
-    return FileResponse(Path(__file__).parent / "static" / "index.html")
+    return FileResponse(Path(__file__).parent / "static" / "index.html", headers=NO_CACHE_HEADERS)
 
 @app.get("/live-smarthome-agent/initialize")
 async def root():
     """Serve the initialize.html page."""
-    return FileResponse(Path(__file__).parent / "static" / "initialize.html")
+    return FileResponse(Path(__file__).parent / "static" / "initialize.html", headers=NO_CACHE_HEADERS)
 
 @app.get("/live-smarthome-agent/camview")
 async def root():
     """Serve the index.html page."""
-    return FileResponse(Path(__file__).parent / "static" / "camview.html")
+    return FileResponse(Path(__file__).parent / "static" / "camview.html", headers=NO_CACHE_HEADERS)
 
 
 
