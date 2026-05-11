@@ -461,36 +461,19 @@ class Tools:
 
         results =[]
         
-        # Changing to parallel async firing
-        # for camera_id in camera_ids:
-        #     try:
-        #         # analyze_camera_feed returns a JSON string
-        #         response_str = analyze_camera_feed(camera_id, userQuery)
-                
-        #         # Parse it back to a dictionary so we don't end up with nested/escaped JSON strings
-        #         response_dict = json.loads(response_str)
-        #         results.append(response_dict)
-                
-        #     except Exception as e:
-        #         logger.error(f"Failed to check camera {camera_id}: {str(e)}")
-        #         # Append a fallback payload if a specific camera fails
-        #         results.append({
-        #             "id": camera_id,
-        #             "error": str(e),
-        #             "is_user_query_addressed": False
-        #         })
-        
-        async def process_camera(camera_id):
-            try:
-                # Runs the blocking function in a separate thread
-                response_str = await analyze_camera_feed(camera_id, userQuery)
-                return response_str
-            except Exception as e:
-                # ... (error handling)
-                return {"id": camera_id, "error": str(e)}
-            
-        tasks = [process_camera(cid) for cid in camera_ids]
-        results = await asyncio.gather(*tasks)                 
+        # 2. Define your asynchronous logic inside an internal wrapper
+        async def _process_all_cameras():
+            async def process_camera(camera_id):
+                try:
+                    # Assuming analyze_camera_feed is an async function
+                    response_str = await analyze_camera_feed(camera_id, userQuery)
+                    return json.loads(response_str)
+                except Exception as e:
+                    logger.error(f"Failed to check camera {camera_id}: {str(e)}")
+                    return {"id": camera_id, "error": str(e), "is_user_query_addressed": False}
+
+            tasks = [process_camera(cid) for cid in camera_ids]
+            return await asyncio.gather(*tasks)              
 
         # Return the aggregated list as a clean, formatted JSON string
         return results
