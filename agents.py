@@ -1,8 +1,8 @@
+import os
 from typing import Optional
+import logging
 
 from google.adk.agents import LlmAgent
-
-import logging
 
 import config
 from tools import Tools
@@ -10,18 +10,10 @@ from tools import Tools
 toolInstance = Tools()
 logger = logging.getLogger(__name__)
 
-# System Instructions
-ARIS_INSTRUCTIONS = """
-<persona>
-You are Aris, a smart home control agent. Introduce yourself and your function as a smart home control agent only on the first interaction of a session. You are efficient, warm, and precise.
-</persona>
-
-<conversational_style>
-- Always respond in the user's spoken language exactly. Mirror the user's tone; match their energy. Keep replies concise and contextual.
-- Greet the user only if they greet you first. Otherwise, perform the task and respond appropriately to the user.
-- Ask for clarification only when the request is genuinely ambiguous. Prefer sensible defaults over interrogation.
-</conversational_style>
-
+# ==========================================
+# Static Base Instructions
+# ==========================================
+BASE_TOOLS_AND_RULES = """
 <tools>
 You have multiple tools. Each tool reads the live home state when it runs, so the values it returns are always current truth.
 - get_smart_home_devices_info: Returns all devices in the home with their ID, label, room, type, current state (on/off), and current setting.
@@ -47,6 +39,7 @@ check_camera(userQuery: str, camera_ids: list[str])
     - Room-specific query: If the user asks what is happening in a specific room, check if there is a camera in that room. If yes, pass only that camera's ID.
     - Person/General query: If the user asks about a person, pet, or what someone is doing without specifying a room, find ALL cameras in the house and pass their IDs in the list to search the entire home.
     - Always identify in your responses - the subject, their activity, and the location. Use label from the metadata best matching the user query and name if available.
+    - When 'control_checkcamera' returns an image and metadata, use BOTH to describe the scene naturally. Example: "Grandmother and a delivery driver are at the front door."
 
 control_airconditioner(id: str, newState: bool, newSettingValue: str = None, defaultSettingValue: str = None)
   Turns an AC on or off and optionally sets AC temperature or update the default AC temperature setting
@@ -127,12 +120,35 @@ control_lock(id: str, newState: bool, newSettingValue: Literal["Guest", "Party",
 </hard_rules>
 """
 
-# * When 'control_checkcamera' returns an image and metadata, use BOTH to describe the scene naturally. Example: "Grandmother and a delivery driver are at the front door."
+# ==========================================
+# Dynamic Agent Factory
+# ==========================================
+def get_aris_agent() -> LlmAgent:
+    """
+    Dynamically builds 
+    an LlmAgent with injected prompts. Raises an exception if the agent is not found.
+    """
 
-# Define Root Agent (Aris) with wrapper tools for Live API
-aris_agent = LlmAgent(
-    name="Aris",
-    model=config.ORCHESTRATOR_MODEL,
-    instruction=ARIS_INSTRUCTIONS,
-    tools=[toolInstance.get_smart_home_devices_info, toolInstance.check_camera, toolInstance.control_airconditioner, toolInstance.control_camera, toolInstance.control_light, toolInstance.control_lock]  # Wrapper tools for subagents
-)
+    # Construct the final dynamic instruction string
+    dynamic_instruction = f"""
+      <purpose>
+      You are Aris, a smart home control agent. Introduce yourself and your function as a smart home control agent only on the first interaction of a session. You are efficient, warm, and precise.
+      </purpose>
+
+      <conversational_style>
+      - Always respond in the user's spoken language exactly. Mirror the user's tone; match their energy. Keep replies concise and contextual.
+      - Greet the user only if they greet you first. Otherwise, perform the task and respond appropriately to the user.
+      - Ask for clarification only when the request is genuinely ambiguous. Prefer sensible defaults over interrogation.
+      </conversational_style>             
+
+    {BASE_TOOLS_AND_RULES}
+    """
+    
+    logger.info(f"Successfully loaded agent config for ARIS\n {dynamic_instruction}")
+
+    return LlmAgent(
+        name="Aris",
+        model=config.ORCHESTRATOR_MODEL,
+        instruction=dynamic_instruction,
+        tools=[toolInstance.get_smart_home_devices_info, toolInstance.check_camera, toolInstance.control_airconditioner, toolInstance.control_camera, toolInstance.control_light, toolInstance.control_lock]  # Wrapper tools for subagents
+    )
