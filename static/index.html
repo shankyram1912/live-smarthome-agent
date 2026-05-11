@@ -242,14 +242,14 @@
         }
 
         /* TOOL COLORS MAP */
-        .type-get_smart_home_devices_info { --tool-color: #A1A1A6; } 
+        .type-get_smart_home_devices_info { --tool-color: #30D158; } 
         .type-control_airconditioner { --tool-color: #0A84FF; } 
         .type-control_camera { --tool-color: #BF5AF2; } 
         .type-check_camera { --tool-color: #BF5AF2; } 
         .type-control_light { --tool-color: #FF9F0A; } 
         .type-control_lock { --tool-color: #FF453A; } 
         .type-check_notifications { --tool-color: #64D2FF; } 
-        .type-find_people { --tool-color: #30D158; } 
+        .type-tool_default { --tool-color: #A1A1A6; } 
 
         /* COMPACT REQUEST VS RESPONSE */
         .tool-entry.request {
@@ -2322,7 +2322,7 @@
             if (!container) return;
 
             // 1. Data Preparation
-            const safeType = TOOL_LOG_CONFIG.KNOWN_TOOLS.has(toolName) ? toolName : 'get_smart_home_devices_info';
+            const safeType = TOOL_LOG_CONFIG.KNOWN_TOOLS.has(toolName) ? toolName : 'tool_default';
             const reqClass = isRequest ? 'request' : 'response';
             const badgeText = isRequest ? 'REQ' : 'RES';
             const formattedPayload = formatToolPayload(toolName, isRequest, payload);
