@@ -1,5 +1,9 @@
 # live-smarthome-agent
-python3 -m venv .venv
+
+# Create a virtual environment and install dependencies
+uv venv
 source .venv/bin/activate
-pip3 install -r requirements.txt
-python3 main.py
+uv pip install -r requirements.txt
+
+# Start the server
+uv run main.py
