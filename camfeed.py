@@ -45,13 +45,13 @@ async def analyze_camera_feed(device_id: str, user_query: str) -> str:
     
     # 1. Strictly fetch from environment variables
     project_id = os.getenv("GOOGLE_CLOUD_PROJECT")
-    project_location = os.getenv("GOOGLE_CLOUD_LOCATION")
+    project_location = os.getenv("SUBAGENT_CLOUD_LOCATION")
     
     missing_vars =[]
     if not project_id:
         missing_vars.append("GOOGLE_CLOUD_PROJECT")
     if not project_location:
-        missing_vars.append("GOOGLE_CLOUD_LOCATION")
+        missing_vars.append("SUBAGENT_CLOUD_LOCATION")
         
     if missing_vars:
         error_msg = f"Missing required environment variables in .env file: {', '.join(missing_vars)}"
