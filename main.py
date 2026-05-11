@@ -7,7 +7,6 @@ import base64
 import json
 import time
 import warnings
-import config
 import uvicorn
 
 from typing import Optional
@@ -26,8 +25,6 @@ from google.adk.sessions import InMemorySessionService
 from google.genai import types
 from google.genai.types import ProactivityConfig
 
-from agents import get_aris_agent
-
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -38,10 +35,16 @@ logger = logging.getLogger(__name__)
 # Suppress Pydantic serialization warnings
 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
 
+# config imports are placed after logging configuration so loggers in AgentConfig can be captured
+import config
+from config import AgentConfig
+from agents import get_aris_agent
+
 # Load environment variables first
 load_dotenv(override=True)
 
 app_name = config.APP_NAME
+agent_config = config.agent_config
 
 app = FastAPI(title="Aris: The Smart Home Agent")
 session_service = InMemorySessionService()
@@ -143,23 +146,29 @@ async def websocket_endpoint(
 
     response_modalities = ["AUDIO"]
         
-    run_config = RunConfig(
-        streaming_mode=StreamingMode.BIDI,
-        response_modalities=response_modalities,
-        speech_config=types.SpeechConfig(
+    # 1. Define the base configuration arguments that apply to both Gemini and Vertex AI
+    run_config_kwargs = {
+        "streaming_mode": StreamingMode.BIDI,
+        "response_modalities": response_modalities,
+        "speech_config": types.SpeechConfig(
             voice_config=types.VoiceConfig(
                 prebuilt_voice_config=types.PrebuiltVoiceConfig(
                     voice_name=voice
                 )
             )
         ),            
-        input_audio_transcription=types.AudioTranscriptionConfig(),
-        output_audio_transcription=types.AudioTranscriptionConfig(),
-        # Note session resumption only works for Vertex AI, not Gemini API
-        session_resumption=types.SessionResumptionConfig(),
-        proactivity=ProactivityConfig(proactive_audio=proactive_audio),
-        enable_affective_dialog=affective_dialog
-    )
+        "input_audio_transcription": types.AudioTranscriptionConfig(),
+        "output_audio_transcription": types.AudioTranscriptionConfig(),
+    }
+
+    # 2. Conditionally inject features exclusive to the Vertex AI Live API
+    if agent_config.IS_VERTEX_AI_LIVE_API:
+        run_config_kwargs["session_resumption"] = types.SessionResumptionConfig()
+        run_config_kwargs["proactivity"] = ProactivityConfig(proactive_audio=proactive_audio)
+        run_config_kwargs["enable_affective_dialog"] = affective_dialog
+
+    # 3. Instantiate the RunConfig by unpacking the dictionary
+    run_config = RunConfig(**run_config_kwargs)
 
     live_request_queue = LiveRequestQueue()
 

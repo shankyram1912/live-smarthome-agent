@@ -148,7 +148,7 @@ def get_aris_agent() -> LlmAgent:
 
     return LlmAgent(
         name="Aris",
-        model=config.ORCHESTRATOR_MODEL,
+        model=config.agent_config.ORCHESTRATOR_MODEL,
         instruction=dynamic_instruction,
         tools=[toolInstance.get_smart_home_devices_info, toolInstance.check_camera, toolInstance.control_airconditioner, toolInstance.control_camera, toolInstance.control_light, toolInstance.control_lock]  # Wrapper tools for subagents
     )

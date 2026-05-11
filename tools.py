@@ -445,7 +445,7 @@ class Tools:
             logger.error(f"Failed to update lock {id}: {str(e)}")
             return {"error": f"Database update failed: {str(e)}"}         
         
-    async def check_camera(self, userQuery: str, camera_ids: list[str]) -> str:
+    def check_camera(self, userQuery: str, camera_ids: list[str]) -> str:
         """
         Analyzes live camera feeds to answer a user's query about their smart home environment.
 
