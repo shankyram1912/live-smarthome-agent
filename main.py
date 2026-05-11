@@ -240,29 +240,32 @@ async def websocket_endpoint(
             event_dict = json.loads(event_json)
             
             event_type = None
+            event_summary = None
             is_audio_stream = False
             
             if event.content and event.content.parts:
                 part = event.content.parts[0]
                 
                 if part.inline_data:
-                    event_type = f"AUDIO {part.inline_data.mime_type} Received {len(part.inline_data.data)} bytes"
+                    event_summary = f"AUDIO {part.inline_data.mime_type} Received {len(part.inline_data.data)} bytes"
                 elif part.text:
-                    event_type = f"TEXT {part.text} IS_PARTIAL {event.partial} TURN_COMPLETE {event.turn_complete}"
+                    event_summary = f"TEXT {part.text} IS_PARTIAL {event.partial} TURN_COMPLETE {event.turn_complete}"
                 for part in event.content.parts:
                     if part.function_call:
-                        event_type = f"MODEL FUNCTION CALL {part.function_call.name} INPUT PARAMS {part.function_call.args}"
+                        event_type = "function_call"
+                        event_summary = f"MODEL FUNCTION CALL {part.function_call.name} INPUT PARAMS {part.function_call.args}"
                     elif part.function_response:
-                        event_type = f"USER FUNCTION CALL RESPONSE {part.function_response.name} OUTPUT PARAMS {part.function_response.response}"                        
+                        event_type = "function_response"
+                        event_summary = f"USER FUNCTION CALL RESPONSE {part.function_response.name} OUTPUT PARAMS {part.function_response.response}"                        
                     
             if event.input_transcription:
-                event_type = f"🗣️ USER TALKING: {event.input_transcription.text} IS_FINISHED {event.input_transcription.finished} IS_PARTIAL {event.partial} TURN_COMPLETE {event.turn_complete}"                        
+                event_summary = f"🗣️ USER TALKING: {event.input_transcription.text} IS_FINISHED {event.input_transcription.finished} IS_PARTIAL {event.partial} TURN_COMPLETE {event.turn_complete}"                        
             elif event.output_transcription:
-                event_type = f"🤖 AI AGENT TALKING: {event.output_transcription.text} IS_FINISHED {event.output_transcription.finished} IS_PARTIAL {event.partial} TURN_COMPLETE {event.turn_complete}"                        
+                event_summary = f"🤖 AI AGENT TALKING: {event.output_transcription.text} IS_FINISHED {event.output_transcription.finished} IS_PARTIAL {event.partial} TURN_COMPLETE {event.turn_complete}"                        
                 
             # Uncomment for event logging
-            #if event_type:
-            #    print(f"++ {event_type}", flush=True)
+            #if event_summary:
+            #    print(f"++ {event_summary}", flush=True)
             # else:
             #     print(f"xx UNTAGGED EVENT {event_dict}", flush=True)
             
@@ -284,11 +287,12 @@ async def websocket_endpoint(
                         if hasattr(part.inline_data, 'data') and part.inline_data.data:
                             logger.debug(f"### SENDING AUDIO RESPONSE TO FRONTEND")                                
                             await websocket.send_bytes(part.inline_data.data)
-                else:                
-                    logger.info(f"### RESPONSE TO FRONTEND - {event_json}")
+                else:
+                    if(event_type in ("function_call", "function_response")):                
+                        logger.info(f"### RESPONSE TO FRONTEND - {event_json}")
                     await websocket.send_text(event_json)                    
             else:                
-                logger.info(f"### RESPONSE TO FRONTEND - {event_json}")
+                # logger.info(f"### RESPONSE TO FRONTEND - {event_json}")
                 await websocket.send_text(event_json)
 
     # ========================================
