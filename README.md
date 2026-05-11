@@ -1,4 +1,4 @@
-# live-smarthome-agent
+# live-smarthome-agent #
 
 # Create a virtual environment and install dependencies
 uv venv
