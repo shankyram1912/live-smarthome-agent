@@ -337,12 +337,12 @@ async function connectWebsocket() {
                         if (typeof window.addDynamicHeroAction === 'function') {
                             
                             // Base delay of 300ms (to allow audio catch up) + 300ms for each subsequent item
-                            const baseDelay = 0;
+                            const baseDelay = 300;
 
                             // Stagger the animation using the loop index. 
                             setTimeout(() => {
                                 window.addDynamicHeroAction(deviceData);
-                            }, baseDelay + index * 500);
+                            }, baseDelay + index * 300);
                             
                         } else {
                             console.warn("addDynamicHeroAction is not defined on the window object.");
@@ -357,7 +357,7 @@ async function connectWebsocket() {
                             // Trigger the new carousel modal we just built
 
                             // Base delay of 300ms (to allow audio catch up) 
-                            const baseDelay = 0;
+                            const baseDelay = 300;
 
                             setTimeout(() => {
                                 window.showCameraModal(payload);
