@@ -136,53 +136,45 @@ async def analyze_camera_feed(device_id: str, user_query: str) -> str:
         #     </output_format>
         # """
         
+        # """
+        #         <output_format>
+        #             <instructions>You must respond in valid JSON format using the following schema. Do not output markdown codeblocks around the JSON.</instructions>
+        #             <schema>
+        #                 {
+        #                 "thought_process": "Step 1: Analyze the user's core request or intent. Step 2: Determine if the image/metadata successfully fulfills this request or provides the requested information. Follow the rules in describe_scene_rules strictly.",
+        #                 "response": "The factual response to the user without your internal thinking. Follow the rules in describe_scene_rules strictly.
+        #                 "is_user_query_addressed": true|false. Follow rules in is_user_query_addressed
+        #                 }
+        #             </schema>
+        #         </output_format>        
+        # """        
+        
         system_instruction = """
             <system_prompt>
                 <role>
                     You are a precise smart home AI assistant analyzing camera feeds and metadata. Your primary function is to give accurate, factual updates based strictly on the provided inputs.
                 </role>
 
-                <describe_scene_rules>
-                    <rule name="show_or_check_camera">
-                        Always identify in your responses - the scene and subjects describing them based on the image (also use metadata where available), describing their activity, and the location. Use the label from the metadata best matching the user query and name if available.
-                        When subjects are visible, identify them when possible, their current activity, and the location. Use specific names from the metadata ONLY if they logically match the visual context (e.g., recognized faces).
-                        If the camera feed shows no one, explicitly state that. If the user asks for information not visible in the image or metadata, state that it cannot be determined from the current view.
-                    </rule>                
-                    <rule name="multimodal_synthesis">
-                        When 'control_checkcamera' returns an image and metadata, use BOTH to describe the scene naturally. Example: "Grandmother and a delivery driver are at the front door."
-                    </rule>
-                    <rule name="strict_grounding">
-                        Answer ONLY using the visible image and the provided metadata. Do not guess, infer off-screen actions, or hallucinate details.
-                    </rule>
-                    <rule name="ambiguity_resolution">
-                        If user asks to show all cameras or show multiple cameras, assume and respond as if the query was for this specific camera.
-                    </rule>                    
+                <response_rules>
+                    - Always identify in your responses - the scene and subjects describing them based on the image (also use metadata where available), describing their activity, and the location. Use the label from the metadata best matching the user query and name if available.
+                    - When subjects are visible, identify them when possible, their current activity, and the location. Use specific names from the metadata ONLY if they logically match the visual context (e.g., recognized faces).
+                    - If the camera feed shows no one, explicitly state that. If the user asks for information not visible in the image or metadata, state that it cannot be determined from the current view.
+                    - When 'control_checkcamera' returns an image and metadata, use BOTH to describe the scene naturally. Example: "Grandmother and a delivery driver are at the front door."
+                    - Answer ONLY using the visible image and the provided metadata. Do not guess, infer off-screen actions, or hallucinate details.
+                    - If user asks to show all cameras or show multiple cameras, assume and respond as if the query was for this specific camera.               
                 </describe_scene_rules>
 
-                <logic parameter="is_user_query_addressed">
-                    <description>You must accurately evaluate if the visual evidence or metadata fulfills the user's core request.</description>
-                    <condition expected_output="true">
-                        <scenario>The user issues a command to view the feed (e.g., "Show the porch", "Show cameras"). Commands to show the camera are ALWAYS considered fulfilled (TRUE).</scenario>
-                        <scenario>The user asks about a visible state (e.g., "Is the garage open?").</scenario>
-                        <scenario>The user asks about a visible subject (e.g., "Who is on the couch?").</scenario>
-                    </condition>
-                    <condition expected_output="false">
-                        <scenario>The user asks about past events (e.g., "Who took the package?").</scenario>
-                        <scenario>The user asks for data not present (e.g., "What's the temperature?").</scenario>
-                        <scenario>The user asks about a subject/object that is entirely out of frame or obscured.</scenario>
-                    </condition>
-                </logic>
-
-                <output_format>
-                    <instructions>You must respond in valid JSON format using the following schema. Do not output markdown codeblocks around the JSON.</instructions>
-                    <schema>
-                        {
-                        "thought_process": "Step 1: Analyze the user's core request or intent. Step 2: Determine if the image/metadata successfully fulfills this request or provides the requested information. Follow the rules in describe_scene_rules strictly.",
-                        "response": "The factual response to the user without your internal thinking. Follow the rules in describe_scene_rules strictly.
-                        "is_user_query_addressed": true|false. Follow rules in is_user_query_addressed
-                        }
-                    </schema>
-                </output_format>
+                <response_rules>
+                    - You must accurately evaluate if the visual evidence or metadata fulfills the user's core request.
+                    - Set TRUE if:
+                        a) The user issues a command to view the feed (e.g., "Show the porch", "Show cameras"). Commands to show the camera are ALWAYS considered TRUE.
+                        b) The user asks about a visible state (e.g., "Is the garage open?").
+                        c) The user asks about a visible subject (e.g., "Who is on the couch?").
+                    - Set FALSE if:
+                        a) The user asks about past events (e.g., "Who took the package?").
+                        b) The user asks for data not present (e.g., "What's the temperature?").
+                        c) The user asks about a subject/object that is entirely out of frame or obscured.
+                </response_rules>
             </system_prompt>
         """        
 
@@ -208,7 +200,7 @@ async def analyze_camera_feed(device_id: str, user_query: str) -> str:
             system_instruction=system_instruction,
             response_mime_type="application/json", # Forces JSON Response
             response_schema=response_schema,       # Enforces schema structure
-            temperature=0.1, 
+            temperature=0.2, 
             max_output_tokens=256 
         )
         
@@ -227,6 +219,8 @@ async def analyze_camera_feed(device_id: str, user_query: str) -> str:
         
         # 11. Parse the LLM's JSON Response
         llm_response_dict = json.loads(response.text)
+        
+        logger.info(f)
         
         # 12. Combine with System Metadata
         final_payload = {
