@@ -18,15 +18,6 @@ class AgentConfig:
             
             logger.info("Need to route to GEMINI API (Google AI Studio).")
             
-            # # 1. Patch ADK to use v1beta for Gemini API live connections for 3.1 Flash.
-            # # ADK (as of 1.32.0) still defaults `_live_api_version` to "v1alpha" for AI Studio, 
-            # # but `gemini-3.1-flash-live-preview` is only served on v1beta.
-            # from google.adk.models.google_llm import Gemini
-            # from google import genai
-            
-            # # Patch ADK to use v1beta for Gemini API live connections for 3.1 Flash.
-            # Gemini._live_api_version = "v1beta"
-            
             self.ORCHESTRATOR_MODEL = os.getenv(
                 "LIVEAGENT_GEMINI_MODEL", 
                 "gemini-3.1-flash-live-preview"
