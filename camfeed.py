@@ -161,14 +161,14 @@ async def analyze_camera_feed(device_id: str, user_query: str) -> str:
                 </rules>
 
                 <describe_scene_rules>
-                    <rule name="room_specific_query">
-                        If the user asks what is happening in a specific room, check if there is a camera in that room. If yes, pass only that camera's ID.
+                    <rule name="mandatory_identification">
+                        Always identify in your responses - the scene and subjects describing them based on the image (also use metadata where available), describing their activity, and the location. Use the label from the metadata best matching the user query and name if available.
+                    </rule>                
+                    <rule name="show_or_check_camera">
+                        If the user asks to show camera - the scene and subjects describing them based on the image (also use metadata where available), describing their activity, and the location. Use the label from the metadata best matching the user query and name if available.
                     </rule>
                     <rule name="person_or_general_query">
                         If the user asks about a person, pet, or what someone is doing without specifying a room, find ALL cameras in the house and pass their IDs in the list to search the entire home.
-                    </rule>
-                    <rule name="mandatory_identification">
-                        Always identify in your responses - the subject, their activity, and the location. Use the label from the metadata best matching the user query and name if available.
                     </rule>
                     <rule name="multimodal_synthesis">
                         When 'control_checkcamera' returns an image and metadata, use BOTH to describe the scene naturally. Example: "Grandmother and a delivery driver are at the front door."
