@@ -243,37 +243,37 @@ async def analyze_camera_feed(device_id: str, user_query: str) -> str:
         logger.error(f"An error occurred while communicating with Google Gen AI: {str(e)}")
         raise e
 
-# ==========================================
-# Example Usage:
-# ==========================================
-# if __name__ == "__main__":
+==========================================
+Example Usage:
+==========================================
+if __name__ == "__main__":
     
-#     # Make sure asyncio is imported at the top of your file!
-#     import asyncio 
-#     import logging    
+    # Make sure asyncio is imported at the top of your file!
+    import asyncio 
+    import logging    
     
-#     logging.basicConfig(
-#         level=logging.INFO,
-#         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-#     )
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    )
     
-#     print("--- Camera Agent Tester ---")
+    print("--- Camera Agent Tester ---")
     
-#     cam_id = input("Enter Camera ID (e.g., cam-1): ").strip()
-#     user_question = input("Enter your question: ").strip()
+    cam_id = input("Enter Camera ID (e.g., cam-1): ").strip()
+    user_question = input("Enter your question: ").strip()
     
-#     if not cam_id or not user_question:
-#         print("\nError: Both Camera ID and Question are required. Exiting.")
-#     else:
-#         try:
-#             print("\nProcessing... please wait.")
+    if not cam_id or not user_question:
+        print("\nError: Both Camera ID and Question are required. Exiting.")
+    else:
+        try:
+            print("\nProcessing... please wait.")
             
-#             # Use asyncio.run() to properly await the coroutine
-#             response_json_dict = asyncio.run(analyze_camera_feed(cam_id, user_question))
+            # Use asyncio.run() to properly await the coroutine
+            response_json_dict = asyncio.run(analyze_camera_feed(cam_id, user_question))
             
-#             print("\n--- Final JSON Payload ---")
-#             # The function returns a dictionary, so we should convert it to a formatted string
-#             print(json.dumps(response_json_dict, indent=2))
+            print("\n--- Final JSON Payload ---")
+            # The function returns a dictionary, so we should convert it to a formatted string
+            print(json.dumps(response_json_dict, indent=2))
             
-#         except Exception as ex:
-#             print(f"\nExecution failed: {ex}")
+        except Exception as ex:
+            print(f"\nExecution failed: {ex}")
