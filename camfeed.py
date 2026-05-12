@@ -217,10 +217,10 @@ async def analyze_camera_feed(device_id: str, user_query: str) -> str:
         )
         response = await loop.run_in_executor(None, sync_fn)
         
-        # 11. Parse the LLM's JSON Response
-        llm_response_dict = json.loads(response.text)
+        logger.info(f"ANALYZE CAMERA FEED - {device_id} \n {response.text}\n")
         
-        logger.info(f)
+        # 11. Parse the LLM's JSON Response
+        llm_response_dict = json.loads(response.text)        
         
         # 12. Combine with System Metadata
         final_payload = {
@@ -243,25 +243,25 @@ async def analyze_camera_feed(device_id: str, user_query: str) -> str:
         logger.error(f"An error occurred while communicating with Google Gen AI: {str(e)}")
         raise e
 
-# ==========================================
-# Example Usage:
-# ==========================================
-# if __name__ == "__main__":
-#     print("--- Camera Agent Tester ---")
+==========================================
+Example Usage:
+==========================================
+if __name__ == "__main__":
+    print("--- Camera Agent Tester ---")
     
-#     cam_id = input("Enter Camera ID (e.g., cam-1): ").strip()
-#     user_question = input("Enter your question: ").strip()
+    cam_id = input("Enter Camera ID (e.g., cam-1): ").strip()
+    user_question = input("Enter your question: ").strip()
     
-#     if not cam_id or not user_question:
-#         print("\nError: Both Camera ID and Question are required. Exiting.")
-#     else:
-#         try:
-#             print("\nProcessing... please wait.")
+    if not cam_id or not user_question:
+        print("\nError: Both Camera ID and Question are required. Exiting.")
+    else:
+        try:
+            print("\nProcessing... please wait.")
             
-#             response_json_string = analyze_camera_feed(cam_id, user_question)
+            response_json_string = analyze_camera_feed(cam_id, user_question)
             
-#             print("\n--- Final JSON Payload ---")
-#             print(response_json_string)
+            print("\n--- Final JSON Payload ---")
+            print(response_json_string)
             
-#         except Exception as ex:
-#             print(f"\nExecution failed: {ex}")
+        except Exception as ex:
+            print(f"\nExecution failed: {ex}")
