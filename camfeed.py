@@ -201,7 +201,7 @@ async def analyze_camera_feed(device_id: str, user_query: str) -> str:
             response_mime_type="application/json", # Forces JSON Response
             response_schema=response_schema,       # Enforces schema structure
             temperature=0.2, 
-            max_output_tokens=256 
+            max_output_tokens=65536 
         )
         
         # 10. Generate content (non-blocking — runs SDK call in thread pool)
