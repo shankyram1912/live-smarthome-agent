@@ -243,9 +243,9 @@ async def analyze_camera_feed(device_id: str, user_query: str) -> str:
         logger.error(f"An error occurred while communicating with Google Gen AI: {str(e)}")
         raise e
 
-==========================================
-Example Usage:
-==========================================
+# ==========================================
+# Example Usage:
+# ==========================================
 if __name__ == "__main__":
     print("--- Camera Agent Tester ---")
     
