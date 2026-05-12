@@ -204,7 +204,18 @@ async def analyze_camera_feed(device_id: str, user_query: str) -> str:
             max_output_tokens=65536 
         )
         
-        # 10. Generate content (non-blocking — runs SDK call in thread pool)
+        # 10. Combine base System Metadata
+        final_payload = {
+            "id": llm_metadata.get("id", device_id),
+            "room": llm_metadata.get("room", "Unknown"),
+            "timestamp": llm_metadata.get("timestamp", ""),
+            "has_unidentified_face": llm_metadata.get("has_unidentified_face", False),
+            "identified_faces": llm_metadata.get("identified_faces",[]),
+            "response": "DEFAULT ERROR: Unable to retrieve camera feed",
+            "is_user_query_addressed":  False
+        }       
+        
+        # 11. Generate content (non-blocking — runs SDK call in thread pool)
         logger.info(f"Sending prompt to Gemini for device '{device_id}'...")      
         
         loop = asyncio.get_running_loop()
@@ -217,23 +228,19 @@ async def analyze_camera_feed(device_id: str, user_query: str) -> str:
         )
         response = await loop.run_in_executor(None, sync_fn)
         
-        logger.info(f"ANALYZE CAMERA FEED - {device_id} \n LLM Response - {response}\n")
+        if not response.text:
+            logger.error(f"ERROR IN ANALYZE CAMERA FEED - {device_id} \n LLM Response - {response}\n")
+        else:
+            logger.info(f"ANALYZE CAMERA FEED - {device_id} \n LLM Response - {response.text}\n")
         
-        # 11. Parse the LLM's JSON Response
-        llm_response_dict = json.loads(response.text)        
+            # 12. Parse the LLM's JSON Response
+            llm_response_dict = json.loads(response.text)
+            
+            # 13. Update the final_payload with the LLM's answers
+            final_payload["response"] = llm_response_dict.get("response", final_payload["response"])
+            final_payload["is_user_query_addressed"] = llm_response_dict.get("is_user_query_addressed", final_payload["is_user_query_addressed"])
         
-        # 12. Combine with System Metadata
-        final_payload = {
-            "id": llm_metadata.get("id", device_id),
-            "room": llm_metadata.get("room", "Unknown"),
-            "timestamp": llm_metadata.get("timestamp", ""),
-            "has_unidentified_face": llm_metadata.get("has_unidentified_face", False),
-            "identified_faces": llm_metadata.get("identified_faces",[]),
-            "response": llm_response_dict.get("response", ""),
-            "is_user_query_addressed": llm_response_dict.get("is_user_query_addressed", False)
-        }
-        
-        # 13. Return
+        # 14. Return
         return final_payload
         
     except json.JSONDecodeError as e:
