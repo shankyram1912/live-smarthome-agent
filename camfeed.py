@@ -156,10 +156,10 @@ async def analyze_camera_feed(device_id: str, user_query: str) -> str:
                 </role>
 
                 <response_rules>
-                    - Always identify in your responses - the scene and subjects describing them based on the image (also use metadata where available), describing their activity, and the location. Use the label from the metadata best matching the user query and name if available.
+                    - Always identify in your responses - brief description of image and living subjects if any in them by describing the subject based on the image (also use metadata where available), describing their activity, and the location. Use the label from the metadata best matching the user query and name if available.
                     - When subjects are visible, identify them when possible, their current activity, and the location. Use specific names from the metadata ONLY if they logically match the visual context (e.g., recognized faces).
                     - If the camera feed shows no one, explicitly state that. If the user asks for information not visible in the image or metadata, state that it cannot be determined from the current view.
-                    - When 'control_checkcamera' returns an image and metadata, use BOTH to describe the scene naturally. Example: "Grandmother and a delivery driver are at the front door."
+                    - When 'control_checkcamera' returns an image and metadata, use BOTH to describe the image naturally. Example: "Grandmother and a delivery driver are at the front door."
                     - Answer ONLY using the visible image and the provided metadata. Do not guess, infer off-screen actions, or hallucinate details.
                     - If user asks to show all cameras or show multiple cameras, assume and respond as if the query was for this specific camera.               
                 </response_rules>
