@@ -233,7 +233,7 @@ async def analyze_camera_feed(device_id: str, user_query: str) -> str:
             "is_user_query_addressed": llm_response_dict.get("is_user_query_addressed", False)
         }
         
-        # 13. Return formatted JSON String
+        # 13. Return
         return final_payload
         
     except json.JSONDecodeError as e:
@@ -247,6 +247,9 @@ async def analyze_camera_feed(device_id: str, user_query: str) -> str:
 # Example Usage:
 # ==========================================
 if __name__ == "__main__":
+    # Make sure asyncio is imported at the top of your file!
+    import asyncio 
+    
     print("--- Camera Agent Tester ---")
     
     cam_id = input("Enter Camera ID (e.g., cam-1): ").strip()
@@ -258,10 +261,12 @@ if __name__ == "__main__":
         try:
             print("\nProcessing... please wait.")
             
-            response_json_string = analyze_camera_feed(cam_id, user_question)
+            # Use asyncio.run() to properly await the coroutine
+            response_json_dict = asyncio.run(analyze_camera_feed(cam_id, user_question))
             
             print("\n--- Final JSON Payload ---")
-            print(response_json_string)
+            # The function returns a dictionary, so we should convert it to a formatted string
+            print(json.dumps(response_json_dict, indent=2))
             
         except Exception as ex:
             print(f"\nExecution failed: {ex}")
