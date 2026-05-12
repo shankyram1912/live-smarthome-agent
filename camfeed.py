@@ -247,8 +247,15 @@ async def analyze_camera_feed(device_id: str, user_query: str) -> str:
 # Example Usage:
 # ==========================================
 if __name__ == "__main__":
+    
     # Make sure asyncio is imported at the top of your file!
     import asyncio 
+    import logging    
+    
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    )
     
     print("--- Camera Agent Tester ---")
     
