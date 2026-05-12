@@ -15,7 +15,6 @@ from camfeed import analyze_camera_feed
 # Module-Level Setup
 # ==========================================
 
-logging.basicConfig(level=logging.INFO) 
 logger = logging.getLogger(__name__)
 
 load_dotenv(override=True)
@@ -27,9 +26,6 @@ class DeviceState(str, Enum):
 
 class Tools:
     def __init__(self):
-        """Initializes the Firestore connection and class state.""" 
-        self._action_cache = {}
-        self._lock = threading.Lock()
         
         project_id = os.getenv("GOOGLE_CLOUD_PROJECT")
         db_id = os.getenv("GOOGLE_CLOUD_FIRESTORE")
@@ -122,11 +118,6 @@ class Tools:
         # Cache check using the instance dictionary
         cache_key = f"{id}_{target_state_str}_{newSettingValue}"
         current_time = time.time()
-        
-        # with self._lock: 
-        #     if cache_key in self._action_cache and (current_time - self._action_cache[cache_key]) < 5:
-        #         return {"status": "IGNORED_DUPLICATE_CALL"}
-        #     self._action_cache[cache_key] = current_time
 
         try:
             doc_ref = self.db.collection("home-users").document("default")
@@ -210,11 +201,6 @@ class Tools:
         # Cache check using the instance dictionary
         cache_key = f"{id}_{target_state_str}_{newSettingValue}"
         current_time = time.time()
-        
-        # with self._lock: 
-        #     if cache_key in self._action_cache and (current_time - self._action_cache[cache_key]) < 5:
-        #         return {"status": "IGNORED_DUPLICATE_CALL"}
-        #     self._action_cache[cache_key] = current_time
 
         try:
             doc_ref = self.db.collection("home-users").document("default")
@@ -298,11 +284,6 @@ class Tools:
         # Cache check using the instance dictionary
         cache_key = f"{id}_{target_state_str}_{newSettingValue}"
         current_time = time.time()
-        
-        # with self._lock: 
-        #     if cache_key in self._action_cache and (current_time - self._action_cache[cache_key]) < 5:
-        #         return {"status": "IGNORED_DUPLICATE_CALL"}
-        #     self._action_cache[cache_key] = current_time
 
         try:
             doc_ref = self.db.collection("home-users").document("default")
@@ -386,11 +367,6 @@ class Tools:
         # Cache check using the instance dictionary
         cache_key = f"{id}_{target_state_str}_{newSettingValue}"
         current_time = time.time()
-        
-        # with self._lock: 
-        #     if cache_key in self._action_cache and (current_time - self._action_cache[cache_key]) < 5:
-        #         return {"status": "IGNORED_DUPLICATE_CALL"}
-        #     self._action_cache[cache_key] = current_time
 
         try:
             doc_ref = self.db.collection("home-users").document("default")
@@ -460,25 +436,6 @@ class Tools:
         logger.info(f"[🔧 TOOL EXECUTION] check_camera(camera_ids={camera_ids}, userQuery='{userQuery}')")
 
         results =[]
-        
-        # Changing to parallel async firing
-        # for camera_id in camera_ids:
-        #     try:
-        #         # analyze_camera_feed returns a JSON string
-        #         response_str = analyze_camera_feed(camera_id, userQuery)
-                
-        #         # Parse it back to a dictionary so we don't end up with nested/escaped JSON strings
-        #         response_dict = json.loads(response_str)
-        #         results.append(response_dict)
-                
-        #     except Exception as e:
-        #         logger.error(f"Failed to check camera {camera_id}: {str(e)}")
-        #         # Append a fallback payload if a specific camera fails
-        #         results.append({
-        #             "id": camera_id,
-        #             "error": str(e),
-        #             "is_user_query_addressed": False
-        #         })
         
         async def process_camera(camera_id):
             try:

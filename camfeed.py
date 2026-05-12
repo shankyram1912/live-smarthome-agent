@@ -12,8 +12,9 @@ from google.genai import types
 # Import the camera simulation metadata
 from camsim import CAM_SIM
 
-# Setup basic logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+from config import agent_config
+
+logger = logging.getLogger(__name__)
 
 # Load environment variables from the .env file
 load_dotenv()
@@ -45,17 +46,14 @@ async def analyze_camera_feed(device_id: str, user_query: str) -> str:
     
     # 1. Strictly fetch from environment variables
     project_id = os.getenv("GOOGLE_CLOUD_PROJECT")
-    project_location = os.getenv("SUBAGENT_CLOUD_LOCATION")
     
     missing_vars =[]
     if not project_id:
         missing_vars.append("GOOGLE_CLOUD_PROJECT")
-    if not project_location:
-        missing_vars.append("SUBAGENT_CLOUD_LOCATION")
         
     if missing_vars:
         error_msg = f"Missing required environment variables in .env file: {', '.join(missing_vars)}"
-        logging.error(error_msg)
+        logger.error(error_msg)
         raise ValueError(error_msg)
         
     # 2. Construct the image path & verify it exists
@@ -63,7 +61,7 @@ async def analyze_camera_feed(device_id: str, user_query: str) -> str:
     
     if not os.path.exists(image_path):
         error_msg = f"Camera feed for device '{device_id}' could not be found at {image_path}."
-        logging.error(error_msg)
+        logger.error(error_msg)
         raise FileNotFoundError(error_msg)
 
     # 3. Retrieve Metadata from mapping.json and CAM_SIM
@@ -86,21 +84,21 @@ async def analyze_camera_feed(device_id: str, user_query: str) -> str:
                         # Remove the filename before passing to LLM so it doesn't get confused
                         llm_metadata.pop("filename", None)
                         metadata_json_str = json.dumps(llm_metadata, indent=2)
-                        logging.info(f"Successfully loaded metadata for {device_id}")
+                        logger.info(f"Successfully loaded metadata for {device_id}")
                         break
             else:
-                logging.warning(f"Key '{target_key}' not found in mapping.json")
+                logger.warning(f"Key '{target_key}' not found in mapping.json")
         except Exception as e:
-            logging.error(f"Error reading mapping or metadata: {e}")
+            logger.error(f"Error reading mapping or metadata: {e}")
     else:
-        logging.warning(f"Mapping file not found at {mapping_path}")
+        logger.warning(f"Mapping file not found at {mapping_path}")
 
     try:
         # 4. Initialize the new genai Client
         client = genai.Client(
             vertexai=True, 
             project=project_id, 
-            location=project_location
+            location=agent_config.SUBAGENT_CLOUD_LOCATION
         )
         
         # 5. Read the local image as bytes
@@ -197,13 +195,13 @@ async def analyze_camera_feed(device_id: str, user_query: str) -> str:
         )
         
         # 10. Generate content (non-blocking — runs SDK call in thread pool)
-        logging.info(f"Sending prompt to Gemini for device '{device_id}'...")      
+        logger.info(f"Sending prompt to Gemini for device '{device_id}'...")      
         
         loop = asyncio.get_running_loop()
         sync_fn = functools.partial(
             _generate_content_sync,
             client,
-            os.getenv("SUBAGENT_LITE_MODEL", "gemini-3.1-flash-lite"),
+            agent_config.SUBAGENT_MODEL,
             [camera_image, prompt],
             generation_config,
         )
@@ -227,31 +225,31 @@ async def analyze_camera_feed(device_id: str, user_query: str) -> str:
         return final_payload
         
     except json.JSONDecodeError as e:
-        logging.error(f"Failed to parse JSON returned from Gemini: {e}")
+        logger.error(f"Failed to parse JSON returned from Gemini: {e}")
         raise
     except Exception as e:
-        logging.error(f"An error occurred while communicating with Google Gen AI: {str(e)}")
+        logger.error(f"An error occurred while communicating with Google Gen AI: {str(e)}")
         raise e
 
 # ==========================================
 # Example Usage:
 # ==========================================
-if __name__ == "__main__":
-    print("--- Camera Agent Tester ---")
+# if __name__ == "__main__":
+#     print("--- Camera Agent Tester ---")
     
-    cam_id = input("Enter Camera ID (e.g., cam-1): ").strip()
-    user_question = input("Enter your question: ").strip()
+#     cam_id = input("Enter Camera ID (e.g., cam-1): ").strip()
+#     user_question = input("Enter your question: ").strip()
     
-    if not cam_id or not user_question:
-        print("\nError: Both Camera ID and Question are required. Exiting.")
-    else:
-        try:
-            print("\nProcessing... please wait.")
+#     if not cam_id or not user_question:
+#         print("\nError: Both Camera ID and Question are required. Exiting.")
+#     else:
+#         try:
+#             print("\nProcessing... please wait.")
             
-            response_json_string = analyze_camera_feed(cam_id, user_question)
+#             response_json_string = analyze_camera_feed(cam_id, user_question)
             
-            print("\n--- Final JSON Payload ---")
-            print(response_json_string)
+#             print("\n--- Final JSON Payload ---")
+#             print(response_json_string)
             
-        except Exception as ex:
-            print(f"\nExecution failed: {ex}")
+#         except Exception as ex:
+#             print(f"\nExecution failed: {ex}")

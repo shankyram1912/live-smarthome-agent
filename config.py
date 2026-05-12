@@ -47,7 +47,14 @@ class AgentConfig:
         self.SUBAGENT_MODEL = os.getenv(
             "SUBAGENT_LITE_MODEL", 
             "gemini-3.1-flash-lite"
-        )        
+        )
+        
+        self.SUBAGENT_CLOUD_LOCATION = os.getenv(
+            "SUBAGENT_LITE_CLOUD_LOCATION", 
+            "global"
+        )
+        
+        logger.info(f"INITAILIZATION COMPLETE with ORCHESTRATOR_MODEL {self.ORCHESTRATOR_MODEL}; IS_VERTEX_AI_LIVE_API {self.IS_VERTEX_AI_LIVE_API}; SUBAGENT_MODEL {self.SUBAGENT_MODEL}; SUBAGENT_CLOUD_LOCATION {self.SUBAGENT_CLOUD_LOCATION};")
 
 # App Configuration
 APP_NAME = "aris_smarthome_agent"
