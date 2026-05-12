@@ -217,7 +217,7 @@ async def analyze_camera_feed(device_id: str, user_query: str) -> str:
         )
         response = await loop.run_in_executor(None, sync_fn)
         
-        logger.info(f"ANALYZE CAMERA FEED - {device_id} \n {response.text}\n")
+        logger.info(f"ANALYZE CAMERA FEED - {device_id} \n LLM Response - {response}\n")
         
         # 11. Parse the LLM's JSON Response
         llm_response_dict = json.loads(response.text)        
@@ -243,9 +243,9 @@ async def analyze_camera_feed(device_id: str, user_query: str) -> str:
         logger.error(f"An error occurred while communicating with Google Gen AI: {str(e)}")
         raise e
 
-==========================================
-Example Usage:
-==========================================
+# ==========================================
+# Example Usage:
+# ==========================================
 if __name__ == "__main__":
     
     # Make sure asyncio is imported at the top of your file!
