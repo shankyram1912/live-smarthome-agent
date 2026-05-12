@@ -162,9 +162,9 @@ async def analyze_camera_feed(device_id: str, user_query: str) -> str:
                     - When 'control_checkcamera' returns an image and metadata, use BOTH to describe the scene naturally. Example: "Grandmother and a delivery driver are at the front door."
                     - Answer ONLY using the visible image and the provided metadata. Do not guess, infer off-screen actions, or hallucinate details.
                     - If user asks to show all cameras or show multiple cameras, assume and respond as if the query was for this specific camera.               
-                </describe_scene_rules>
+                </response_rules>
 
-                <response_rules>
+                <is_user_query_addressed>
                     - You must accurately evaluate if the visual evidence or metadata fulfills the user's core request.
                     - Set TRUE if:
                         a) The user issues a command to view the feed (e.g., "Show the porch", "Show cameras"). Commands to show the camera are ALWAYS considered TRUE.
@@ -174,7 +174,7 @@ async def analyze_camera_feed(device_id: str, user_query: str) -> str:
                         a) The user asks about past events (e.g., "Who took the package?").
                         b) The user asks for data not present (e.g., "What's the temperature?").
                         c) The user asks about a subject/object that is entirely out of frame or obscured.
-                </response_rules>
+                </is_user_query_addressed>
             </system_prompt>
         """        
 
