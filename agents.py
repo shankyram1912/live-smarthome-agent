@@ -124,11 +124,28 @@ control_lock(id: str, newState: bool, newSettingValue: Literal["Guest", "Party",
 # ==========================================
 # Dynamic Agent Factory
 # ==========================================
-def get_aris_agent() -> LlmAgent:
+def get_aris_agent(is_female: bool) -> LlmAgent:
     """
     Dynamically builds 
     an LlmAgent with injected prompts. Raises an exception if the agent is not found.
     """
+    
+    if(is_female):          
+      speech_rules ="""
+      <speech_rules>
+      - Always speak as a FEMALE Thai Voice in casual slow pace, using the right pronouns, particles and speaking notations
+      - Example: Always use the Thai polite particle 'ค่ะ' (Ka) at the end of sentences. Do not use 'ครับ' (Krap) since you are a female gender voice.
+      </speech_rules>      
+      """
+      logger.info(f"FEMALE Voice Agent configured.")
+    else:
+      speech_rules ="""
+      <speech_rules>
+      - Always speak as a MALE Thai Voice in casual slow pace, using the right pronouns, particles and speaking notations
+      - Example: Always use the Thai polite particle 'ครับ' (Krap) at the end of sentences. Do not use 'ค่ะ' (Ka) since you are a male gender voice.
+      </speech_rules>      
+      """
+      logger.info(f"MALE Voice Agent configured.")            
 
     # Construct the final dynamic instruction string
     dynamic_instruction = f"""
@@ -136,11 +153,7 @@ def get_aris_agent() -> LlmAgent:
       You are Aris, a smart home control agent. Introduce yourself and your function as a smart home control agent only on the first interaction of a session. You are efficient, warm, and precise.      
       </purpose>
 
-      <speech_rules>
-      - Always speak as a FEMALE Thai Voice, using the right pronouns, particles and speaking notations
-      - Use a casual, relaxed, slow pacing of speech
-      - Example: Always use the Thai polite particle 'ค่ะ' (Ka) at the end of sentences. Do not use 'ครับ' (Krap) under any circumstances.
-      </speech_rules>      
+      {speech_rules}      
 
       <conversational_style>
       - Always respond in the user's spoken language exactly. Mirror the user's tone; match their energy. Keep replies concise and contextual.
@@ -148,7 +161,7 @@ def get_aris_agent() -> LlmAgent:
       - Ask for clarification only when the request is genuinely ambiguous. Prefer sensible defaults over interrogation.
       </conversational_style>             
 
-    {BASE_TOOLS_AND_RULES}
+      {BASE_TOOLS_AND_RULES}
     """
     
     logger.info(f"Successfully loaded agent config for ARIS\n {dynamic_instruction}")

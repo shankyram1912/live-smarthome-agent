@@ -118,11 +118,11 @@ async def websocket_endpoint(
     )    
     await websocket.accept()
     logger.info("WebSocket connection accepted")
-    logger.info(f"Settings - Voice: {voice} / Gender: {VoiceConfig.get_gender(voice)}, Affective: {affective_dialog}, Proactive: {proactive_audio}")
+    logger.info(f"Settings - Voice: {voice} / Gender: {VoiceConfig.get_gender(voice).name}, Affective: {affective_dialog}, Proactive: {proactive_audio}")
 
     # Fetch Agent Dynamically (Run in Threadpool so we don't block the event loop)
     try:
-        agent = await run_in_threadpool(get_aris_agent)
+        agent = await run_in_threadpool(get_aris_agent, VoiceConfig.is_female(voice))
         logger.info(f"Successfully loaded agent profile for ARIS")
     except Exception as e:
         logger.error(f"Failed to load agent ARIS: {e}")
