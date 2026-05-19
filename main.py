@@ -39,6 +39,7 @@ warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
 import config
 from config import AgentConfig
 from agents import get_aris_agent
+from voiceconfig import VoiceConfig
 
 # Load environment variables first
 load_dotenv(override=True)
@@ -117,7 +118,7 @@ async def websocket_endpoint(
     )    
     await websocket.accept()
     logger.info("WebSocket connection accepted")
-    logger.info(f"Settings - Voice: {voice}, Affective: {affective_dialog}, Proactive: {proactive_audio}")
+    logger.info(f"Settings - Voice: {voice} / Gender: {VoiceConfig.get_gender(voice)}, Affective: {affective_dialog}, Proactive: {proactive_audio}")
 
     # Fetch Agent Dynamically (Run in Threadpool so we don't block the event loop)
     try:
@@ -157,8 +158,8 @@ async def websocket_endpoint(
                 )
             )
         ),            
-        "input_audio_transcription": types.AudioTranscriptionConfig(),
-        "output_audio_transcription": types.AudioTranscriptionConfig(),
+        "input_audio_transcription": types.AudioTranscriptionConfig(language_codes=['en-US', 'th-TH']),
+        "output_audio_transcription": types.AudioTranscriptionConfig(language_codes=['en-US', 'th-TH']),
     }
 
     # 2. Conditionally inject features exclusive to the Vertex AI Live API
