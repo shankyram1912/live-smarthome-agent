@@ -7,3 +7,6 @@ uv pip install -r requirements.txt
 
 # Start the server
 uv run main.py
+
+tmux new-session -d -s smarthome 'uv run main.py'
+tmux attach-session -t smarthome

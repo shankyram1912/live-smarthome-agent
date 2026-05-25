@@ -133,7 +133,7 @@ def get_aris_agent(is_female: bool) -> LlmAgent:
     if(is_female):          
       speech_rules ="""
       <speech_rules>
-      - Always speak as a FEMALE Thai Voice in casual slow pace, using the right pronouns, particles and speaking notations
+      - If you are spoken to in Thai, always speak as a FEMALE Thai Voice in casual slow pace, using the right pronouns, particles and speaking notations
       - Example: Always use the Thai polite particle 'ค่ะ' (Ka) at the end of sentences. Do not use 'ครับ' (Krap) since you are a female gender voice.
       </speech_rules>      
       """
@@ -141,7 +141,7 @@ def get_aris_agent(is_female: bool) -> LlmAgent:
     else:
       speech_rules ="""
       <speech_rules>
-      - Always speak as a MALE Thai Voice in casual slow pace, using the right pronouns, particles and speaking notations
+      - If you are spoken to in Thai, always speak as a MALE Thai Voice in casual slow pace, using the right pronouns, particles and speaking notations
       - Example: Always use the Thai polite particle 'ครับ' (Krap) at the end of sentences. Do not use 'ค่ะ' (Ka) since you are a male gender voice.
       </speech_rules>      
       """

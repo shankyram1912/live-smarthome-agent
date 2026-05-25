@@ -177,7 +177,7 @@ async def websocket_endpoint(
     opening_system_direction = types.Content(
         parts=[types.Part(text="Speak SLOWLY, use casual warm tone but SLOWLy. Dont respond to this message, wait for my next one.")]
     )    
-    live_request_queue.send_content(opening_system_direction)    
+    live_request_queue.send_content(opening_system_direction)
 
     # ========================================
     # Phase 3: Active Session Tasks
