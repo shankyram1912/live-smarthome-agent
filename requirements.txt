@@ -7,3 +7,4 @@ python-dotenv
 google-adk
 google-cloud-firestore
 gemini-live-telemetry
+google-cloud-logging
