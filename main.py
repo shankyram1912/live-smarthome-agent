@@ -11,13 +11,16 @@ import uvicorn
 
 from typing import Optional
 
+# Load environment variables first
+load_dotenv(override=True)
+
 # =========================================================================
 # TELEMETRY ACTIVATION (Must happen BEFORE any google or adk imports!)
 # =========================================================================
 from gemini_live_telemetry import activate, InstrumentationConfig
 
 activate(InstrumentationConfig(
-    project_id=agent_config.GCP_PROJECT_ID,
+    project_id=os.getenv("GOOGLE_CLOUD_PROJECT")
     
     # Export settings
     enable_gcp_export=True,                # Push metrics to Cloud Monitoring
@@ -93,8 +96,6 @@ from config import AgentConfig
 from agents import get_aris_agent
 from voiceconfig import VoiceConfig
 
-# Load environment variables first
-load_dotenv(override=True)
 app_name = config.APP_NAME
 agent_config = config.agent_config
 # =========================================================================
