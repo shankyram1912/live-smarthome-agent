@@ -14,6 +14,12 @@ class AgentConfig:
     and Vertex AI models dynamically for the Live Translator.
     """
     def __init__(self):
+        
+        self.GCP_PROJECT_ID = os.getenv(
+            "GOOGLE_CLOUD_PROJECT",
+            "missing-gcp-project-id"
+        )
+        
         if os.getenv("GOOGLE_GENAI_USE_VERTEXAI", "true").lower() == "false":
             
             logger.info("Need to route to GEMINI API (Google AI Studio).")

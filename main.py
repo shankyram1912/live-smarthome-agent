@@ -25,6 +25,8 @@ from google.adk.sessions import InMemorySessionService
 from google.genai import types
 from google.genai.types import ProactivityConfig
 
+from gemini_live_telemetry import activate, InstrumentationConfig
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -46,6 +48,10 @@ load_dotenv(override=True)
 
 app_name = config.APP_NAME
 agent_config = config.agent_config
+
+activate(InstrumentationConfig(
+    project_id=agent_config.GCP_PROJECT_ID
+))
 
 app = FastAPI(title="Aris: The Smart Home Agent")
 session_service = InMemorySessionService()
