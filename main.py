@@ -70,14 +70,19 @@ if not usage_logger.handlers:
 # =========================================================================
 
 def format_modality_details(details_list) -> str:
-    """Flattens list of ModalityTokenCount objects into a safe CSV column format."""
+    """Flattens and alphabetically sorts a list of ModalityTokenCount objects 
+    into a consistent safe CSV column format.
+    """
     if not details_list:
         return ""
     items = []
     for item in details_list:
         modality = getattr(item, "modality", "UNKNOWN")
-        token_count = getattr(item, "token_count", 0)
+        token_count = getattr(item, "token_count", 0) or 0
         items.append(f"{modality}:{token_count}")
+    
+    # Alphabetically sort so AUDIO always precedes TEXT in your log columns
+    items.sort()
     return "|".join(items)
 # =========================================================================
 
