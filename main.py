@@ -38,7 +38,7 @@ logger = logging.getLogger(__name__)
 # Structured CSV Usage Logger Setup
 # =========================================================================
 TRACE_FILE = "gemini_usage_trace.log"
-CSV_HEADER = "timestamp,user_id,session_id,prompt_token_count,candidates_token_count,total_token_count,cached_content_token_count,thoughts_token_count,prompt_tokens_details,cache_tokens_details,candidates_tokens_details\n"
+CSV_HEADER = "timestamp,user_id,session_id,total_token_count,prompt_token_count,prompt_tokens_details,candidates_token_count,candidates_tokens_details,cached_content_token_count,cache_tokens_details,thoughts_token_count\n"
 
 # Verify or bootstrap local CSV file header
 if not os.path.exists(TRACE_FILE):
@@ -320,35 +320,39 @@ async def websocket_endpoint(
                 
                 # Dynamic list parser to guard against varying model features
                 p_details = format_modality_details(getattr(usage, "prompt_tokens_details", None))
-                c_details = format_modality_details(getattr(usage, "cache_tokens_details", None))
                 cand_details = format_modality_details(getattr(usage, "candidates_tokens_details", None))
+                c_details = format_modality_details(getattr(usage, "cache_tokens_details", None))
                 
                 timestamp_str = time.strftime("%Y-%m-%d %H:%M:%S")
                 
                 # Assemble complete CSV token telemetry metrics line
                 csv_row = (
                     f"{timestamp_str},{user_id},{session_id},"
+                    f"{getattr(usage, 'total_token_count', 0)},"                    
                     f"{getattr(usage, 'prompt_token_count', 0)},"
+                    f"\"{p_details}\"",
                     f"{getattr(usage, 'candidates_token_count', 0)},"
-                    f"{getattr(usage, 'total_token_count', 0)},"
+                    f"\"{cand_details}\""
                     f"{getattr(usage, 'cached_content_token_count', 0)},"
+                    f"\"{c_details}\""                    
                     f"{getattr(usage, 'thoughts_token_count', 0)},"
-                    f"\"{p_details}\",\"{c_details}\",\"{cand_details}\""
                 )
                 
                 # Assemble complete CSV token telemetry metrics line
                 csv_row_display = (
                     f"{timestamp_str},{user_id},{session_id},"
-                    f"prompt_token_count {getattr(usage, 'prompt_token_count', 0)},"
-                    f"candidates_token_count {getattr(usage, 'candidates_token_count', 0)},"
-                    f"total_token_count {getattr(usage, 'total_token_count', 0)},"
-                    f"cached_content_token_count {getattr(usage, 'cached_content_token_count', 0)},"
-                    f"thoughts_token_count {getattr(usage, 'thoughts_token_count', 0)},"
-                    f"\"{p_details}\",\"{c_details}\",\"{cand_details}\""
+                    f" total_token_count {getattr(usage, 'total_token_count', 0)},"                    
+                    f" prompt_token_count {getattr(usage, 'prompt_token_count', 0)},"
+                    f" p_details\" {p_details}\"",
+                    f" candidates_token_count {getattr(usage, 'candidates_token_count', 0)},"
+                    f" cand_details\" {cand_details}\""
+                    f" cached_content_token_count {getattr(usage, 'cached_content_token_count', 0)},"
+                    f" c_details \"{c_details}\""                    
+                    f" thoughts_token_count {getattr(usage, 'thoughts_token_count', 0)},"
                 )                
                 
                 usage_logger.info(csv_row)
-                logger.info("downstream_task started")
+                logger.info(csv_row_display)
             # =========================================================================
 
             event_json = event.model_dump_json(exclude_none=True, by_alias=True)
