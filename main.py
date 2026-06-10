@@ -11,22 +11,9 @@ import uvicorn
 
 from typing import Optional
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
-from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi import HTTPException
-from fastapi.concurrency import run_in_threadpool
-
-from google.adk.agents.live_request_queue import LiveRequestQueue
-from google.adk.agents.run_config import RunConfig, StreamingMode
-from google.adk.runners import Runner
-from google.adk.sessions import InMemorySessionService
-from google.genai import types
-from google.genai.types import ProactivityConfig
-
-from gemini_live_telemetry import activate, InstrumentationConfig
-
+# =========================================================================
+# Logging configuration so loggers in AgentConfig can be captured
+# =========================================================================
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -34,9 +21,7 @@ logging.basicConfig(
 )   
 logger = logging.getLogger(__name__)
 
-# =========================================================================
 # Structured CSV Usage Logger Setup
-# =========================================================================
 TRACE_FILE = "gemini_usage_trace.log"
 CSV_HEADER = "timestamp,user_id,session_id,total_token_count,prompt_token_count,prompt_tokens_details,candidates_token_count,candidates_tokens_details,cached_content_token_count,cache_tokens_details,thoughts_token_count\n"
 
@@ -67,29 +52,15 @@ if not usage_logger.handlers:
         logger.info("Google Cloud Logging handler attached successfully.")
     except ImportError:
         logger.warning("google-cloud-logging package not found. Cloud Logging fallback active.")
-# =========================================================================
-
-def format_modality_details(details_list) -> str:
-    """Flattens and alphabetically sorts a list of ModalityTokenCount objects 
-    into a consistent safe CSV column format.
-    """
-    if not details_list:
-        return ""
-    items = []
-    for item in details_list:
-        modality = getattr(item, "modality", "UNKNOWN")
-        token_count = getattr(item, "token_count", 0) or 0
-        items.append(f"{modality}:{token_count}")
-    
-    # Alphabetically sort so AUDIO always precedes TEXT in your log columns
-    items.sort()
-    return "|".join(items)
-# =========================================================================
-
+        
 # Suppress Pydantic serialization warnings
 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
+# =========================================================================
 
-# config imports are placed after logging configuration so loggers in AgentConfig can be captured
+# =========================================================================
+# Config imports after Logging Config
+# =========================================================================
+
 import config
 from config import AgentConfig
 from agents import get_aris_agent
@@ -97,9 +68,14 @@ from voiceconfig import VoiceConfig
 
 # Load environment variables first
 load_dotenv(override=True)
-
 app_name = config.APP_NAME
 agent_config = config.agent_config
+# =========================================================================
+
+# =========================================================================
+# TELEMETRY ACTIVATION (Must happen BEFORE any google or adk imports!)
+# =========================================================================
+from gemini_live_telemetry import activate, InstrumentationConfig
 
 activate(InstrumentationConfig(
     project_id=agent_config.GCP_PROJECT_ID,
@@ -121,6 +97,43 @@ activate(InstrumentationConfig(
     input_sample_rate=16000,               # Input audio sample rate
     output_sample_rate=24000,              # Output audio sample rate    
 ))
+# =========================================================================
+
+# =========================================================================
+# Now it is safe to bring in your Google and ADK Core modules
+# =========================================================================
+from google.adk.agents.live_request_queue import LiveRequestQueue
+from google.adk.agents.run_config import RunConfig, StreamingMode
+from google.adk.runners import Runner
+from google.adk.sessions import InMemorySessionService
+from google.genai import types
+from google.genai.types import ProactivityConfig
+
+# Remaining Third-Party App Frameworks (FastAPI, Uvicorn, etc.)
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi import HTTPException
+from fastapi.concurrency import run_in_threadpool
+# =========================================================================
+
+def format_modality_details(details_list) -> str:
+    """Flattens and alphabetically sorts a list of ModalityTokenCount objects 
+    into a consistent safe CSV column format.
+    """
+    if not details_list:
+        return ""
+    items = []
+    for item in details_list:
+        modality = getattr(item, "modality", "UNKNOWN")
+        token_count = getattr(item, "token_count", 0) or 0
+        items.append(f"{modality}:{token_count}")
+    
+    # Alphabetically sort so AUDIO always precedes TEXT in your log columns
+    items.sort()
+    return "|".join(items)
+
 
 app = FastAPI(title="Aris: The Smart Home Agent")
 session_service = InMemorySessionService()
@@ -338,14 +351,13 @@ async def websocket_endpoint(
                 cand_tokens = getattr(usage, 'candidates_token_count', 0) or 0
                 cached_tokens = getattr(usage, 'cached_content_token_count', 0) or 0
                 thoughts_tokens = getattr(usage, 'thoughts_token_count', 0) or 0
-                turn_complete = getattr(event, 'turn_complete', False) or False
 
                 # 3. Spreadsheet-ready CSV Row for the actual background trace log file 
                 csv_fields = [
                     str(timestamp_str), str(user_id), str(session_id),
                     str(total_tokens), str(prompt_tokens), f'"{p_details}"',
                     str(cand_tokens), f'"{cand_details}"', str(cached_tokens),
-                    f'"{c_details}"', str(thoughts_tokens), str(turn_complete)
+                    f'"{c_details}"', str(thoughts_tokens)
                 ]
                 csv_row = ",".join(csv_fields)
                 
