@@ -333,6 +333,49 @@ async def websocket_endpoint(
             run_config=run_config,
         ):
 
+            event_json = event.model_dump_json(exclude_none=True, by_alias=True)
+
+            event_dict = json.loads(event_json)
+            
+            event_type = None
+            event_summary = None
+            is_audio_stream = False
+            
+            if event.content and event.content.parts:
+                part = event.content.parts[0]
+                
+                if part.inline_data:
+                    event_summary = f"AUDIO {part.inline_data.mime_type} Received {len(part.inline_data.data)} bytes"
+                elif part.text:
+                    event_summary = f"TEXT {part.text} IS_PARTIAL {event.partial} TURN_COMPLETE {event.turn_complete}"
+                for part in event.content.parts:
+                    if part.function_call:
+                        event_type = "function_call"
+                        event_summary = f"MODEL FUNCTION CALL {part.function_call.name} INPUT PARAMS {part.function_call.args}"
+                    elif part.function_response:
+                        event_type = "function_response"
+                        event_summary = f"USER FUNCTION CALL RESPONSE {part.function_response.name} OUTPUT PARAMS {part.function_response.response}"                        
+                    
+            if event.input_transcription:
+                event_summary = f"🗣️ USER TALKING: {event.input_transcription.text} IS_FINISHED {event.input_transcription.finished} IS_PARTIAL {event.partial} TURN_COMPLETE {event.turn_complete}"                        
+            elif event.output_transcription:
+                event_summary = f"🤖 AI AGENT TALKING: {event.output_transcription.text} IS_FINISHED {event.output_transcription.finished} IS_PARTIAL {event.partial} TURN_COMPLETE {event.turn_complete}"                        
+                
+            # Uncomment for event logging
+            if event_summary:
+               print(f"++ {event_summary}", flush=True)
+            else:
+                print(f"xx UNTAGGED EVENT {event_dict}", flush=True)
+            
+            if event.input_transcription and event.input_transcription.finished:
+                print("\n" + "-"*50)
+                print(f"🗣️ USER FINISHED: {event.input_transcription.text}")
+                print("-" *50 + "\n", flush=True)                        
+            elif event.output_transcription and event.output_transcription.finished:
+                print("\n" + "="*50)
+                print(f"🤖 AI AGENT FINISHED: {event.output_transcription.text}")
+                print("="*50 + "\n", flush=True)
+                
             # =========================================================================
             # NEW: CSV Metrics Interception & Extract Logic
             # =========================================================================
@@ -376,51 +419,7 @@ async def websocket_endpoint(
                 )                
                                 
                 logger.info(csv_row_display)
-            # =========================================================================
-
-            event_json = event.model_dump_json(exclude_none=True, by_alias=True)
-
-            event_dict = json.loads(event_json)
-            
-            event_type = None
-            event_summary = None
-            is_audio_stream = False
-            
-            if event.content and event.content.parts:
-                part = event.content.parts[0]
-                
-                if part.inline_data:
-                    event_summary = f"AUDIO {part.inline_data.mime_type} Received {len(part.inline_data.data)} bytes"
-                elif part.text:
-                    event_summary = f"TEXT {part.text} IS_PARTIAL {event.partial} TURN_COMPLETE {event.turn_complete}"
-                for part in event.content.parts:
-                    if part.function_call:
-                        event_type = "function_call"
-                        event_summary = f"MODEL FUNCTION CALL {part.function_call.name} INPUT PARAMS {part.function_call.args}"
-                    elif part.function_response:
-                        event_type = "function_response"
-                        event_summary = f"USER FUNCTION CALL RESPONSE {part.function_response.name} OUTPUT PARAMS {part.function_response.response}"                        
-                    
-            if event.input_transcription:
-                event_summary = f"🗣️ USER TALKING: {event.input_transcription.text} IS_FINISHED {event.input_transcription.finished} IS_PARTIAL {event.partial} TURN_COMPLETE {event.turn_complete}"                        
-            elif event.output_transcription:
-                event_summary = f"🤖 AI AGENT TALKING: {event.output_transcription.text} IS_FINISHED {event.output_transcription.finished} IS_PARTIAL {event.partial} TURN_COMPLETE {event.turn_complete}"                        
-                
-            # Uncomment for event logging
-            #if event_summary:
-            #    print(f"++ {event_summary}", flush=True)
-            # else:
-            #     print(f"xx UNTAGGED EVENT {event_dict}", flush=True)
-            
-            
-            if event.input_transcription and event.input_transcription.finished:
-                print("\n" + "-"*50)
-                print(f"🗣️ USER FINISHED: {event.input_transcription.text}")
-                print("-" *50 + "\n", flush=True)                        
-            elif event.output_transcription and event.output_transcription.finished:
-                print("\n" + "="*50)
-                print(f"🤖 AI AGENT FINISHED: {event.output_transcription.text}")
-                print("="*50 + "\n", flush=True)                 
+            # =========================================================================                                 
             
             # Always forward the raw event to the frontend (for audio), everything else is JSON
             if event.content and event.content.parts:
