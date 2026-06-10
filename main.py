@@ -359,8 +359,7 @@ async def websocket_endpoint(
                     f" prompt_token_count {prompt_tokens}; {p_details},"
                     f" candidates_token_count {cand_tokens}; {cand_details},"
                     f" cached_content_token_count {cached_tokens}; {c_details},"
-                    f" thoughts_token_count {thoughts_tokens},"
-                    f" turn_complete {turn_complete}"
+                    f" thoughts_token_count {thoughts_tokens}"
                 )                
                                 
                 logger.info(csv_row_display)
