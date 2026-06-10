@@ -336,6 +336,7 @@ async def websocket_endpoint(
                     f"{getattr(usage, 'cached_content_token_count', 0)},"
                     f"\"{c_details}\""                    
                     f"{getattr(usage, 'thoughts_token_count', 0)},"
+                    f"{getattr(event, "turn_complete", False)}"
                 )
                 
                 # Assemble complete CSV token telemetry metrics line
