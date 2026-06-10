@@ -350,6 +350,7 @@ async def websocket_endpoint(
                 )                
                 
                 usage_logger.info(csv_row)
+                logger.info(csv_row_display)
             # =========================================================================
 
             event_json = event.model_dump_json(exclude_none=True, by_alias=True)
