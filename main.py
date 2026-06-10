@@ -344,7 +344,6 @@ async def websocket_endpoint(
                 ]
                 csv_row = ",".join(csv_fields)
                 
-                # Write the clean data row straight into the backend logs
                 usage_logger.info(csv_row)
 
                 # 4. Human-readable visualization layout (Implicit multi-line string concatenation)
@@ -359,7 +358,6 @@ async def websocket_endpoint(
                     f" turn_complete {turn_complete}"
                 )                
                                 
-                usage_logger.info(csv_row)
                 logger.info(csv_row_display)
             # =========================================================================
 
