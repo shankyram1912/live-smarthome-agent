@@ -342,12 +342,9 @@ async def websocket_endpoint(
                 csv_row_display = (
                     f"{timestamp_str},{user_id},{session_id},"
                     f" total_token_count {getattr(usage, 'total_token_count', 0)},"                    
-                    f" prompt_token_count {getattr(usage, 'prompt_token_count', 0)},"
-                    f" p_details\" {p_details}\"",
-                    f" candidates_token_count {getattr(usage, 'candidates_token_count', 0)},"
-                    f" cand_details\" {cand_details}\""
-                    f" cached_content_token_count {getattr(usage, 'cached_content_token_count', 0)},"
-                    f" c_details \"{c_details}\""                    
+                    f" prompt_token_count {getattr(usage, 'prompt_token_count', 0)}; {p_details},"
+                    f" candidates_token_count {getattr(usage, 'candidates_token_count', 0)}; {cand_details},"
+                    f" cached_content_token_count {getattr(usage, 'cached_content_token_count', 0)}; {c_details}"
                     f" thoughts_token_count {getattr(usage, 'thoughts_token_count', 0)},"
                 )                
                 
