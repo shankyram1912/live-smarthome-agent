@@ -405,7 +405,7 @@ async def websocket_endpoint(
                 ]
                 csv_row = ",".join(csv_fields)
                 
-                usage_logger.info(csv_row)
+                usage_logger.info(f"usage_metadata {csv_row}")
 
                 # 4. Human-readable visualization layout (Implicit multi-line string concatenation)
                 # NOTE: Keep the commas strictly INSIDE the quotes to avoid creating a tuple.
@@ -432,6 +432,10 @@ async def websocket_endpoint(
                 else:
                     if(event_type in ("function_call", "function_response")):                
                         logger.info(f"### RESPONSE TO FRONTEND - {event_json}")
+                            if(event_type in ("function_call")):
+                                usage_logger.info(f"function_call {len(json.dumps(event_json)}")
+                            else:
+                                usage_logger.info(f"function_response {len(json.dumps(event_json)}")
                     await websocket.send_text(event_json)                    
             else:                
                 # logger.info(f"### RESPONSE TO FRONTEND - {event_json}")
