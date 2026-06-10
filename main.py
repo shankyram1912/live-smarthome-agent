@@ -40,32 +40,34 @@ logger = logging.getLogger(__name__)
 TRACE_FILE = "gemini_usage_trace.log"
 CSV_HEADER = "timestamp,user_id,session_id,total_token_count,prompt_token_count,prompt_tokens_details,candidates_token_count,candidates_tokens_details,cached_content_token_count,cache_tokens_details,thoughts_token_count\n"
 
-# Verify or bootstrap local CSV file header
-if not os.path.exists(TRACE_FILE):
-    with open(TRACE_FILE, "w", encoding="utf-8") as f:
-        f.write(CSV_HEADER)
+# OVERWRITE MODE: Unconditionally open with "w" to wipe old data and write a fresh header
+with open(TRACE_FILE, "w", encoding="utf-8") as f:
+    f.write(CSV_HEADER)
 
 usage_logger = logging.getLogger("gemini_usage_trace")
 usage_logger.setLevel(logging.INFO)
 usage_logger.propagate = False  
 
-# Local CSV File Handler
-file_handler = logging.FileHandler(TRACE_FILE)
-file_handler.setFormatter(logging.Formatter("%(message)s"))
-usage_logger.addHandler(file_handler)
+# GUARD: Only attach handlers if they haven't been configured yet
+if not usage_logger.handlers:
+    # 1. Local CSV File Handler (Leave default mode='a' so entries accumulate DURING this server run)
+    file_handler = logging.FileHandler(TRACE_FILE)
+    file_handler.setFormatter(logging.Formatter("%(message)s"))
+    usage_logger.addHandler(file_handler)
 
-# Google Cloud Logging Handler
-try:
-    from google.cloud import logging as cloud_logging
-    from google.cloud.logging.handlers import CloudLoggingHandler
-    
-    cl_client = cloud_logging.Client()
-    cl_handler = CloudLoggingHandler(cl_client, name="gemini-live-usage-trace")
-    cl_handler.setFormatter(logging.Formatter("%(message)s"))
-    usage_logger.addHandler(cl_handler)
-    logger.info("Google Cloud Logging handler attached to usage_logger successfully.")
-except ImportError:
-    logger.warning("google-cloud-logging package not found. Cloud Logging fallback active.")
+    # 2. Google Cloud Logging Handler
+    try:
+        from google.cloud import logging as cloud_logging
+        from google.cloud.logging.handlers import CloudLoggingHandler
+        
+        cl_client = cloud_logging.Client()
+        cl_handler = CloudLoggingHandler(cl_client, name="gemini-live-usage-trace")
+        cl_handler.setFormatter(logging.Formatter("%(message)s"))
+        usage_logger.addHandler(cl_handler)
+        logger.info("Google Cloud Logging handler attached successfully.")
+    except ImportError:
+        logger.warning("google-cloud-logging package not found. Cloud Logging fallback active.")
+# =========================================================================
 
 def format_modality_details(details_list) -> str:
     """Flattens list of ModalityTokenCount objects into a safe CSV column format."""
