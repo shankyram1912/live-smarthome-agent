@@ -34,6 +34,51 @@ logging.basicConfig(
 )   
 logger = logging.getLogger(__name__)
 
+# =========================================================================
+# Structured CSV Usage Logger Setup
+# =========================================================================
+TRACE_FILE = "gemini_usage_trace.log"
+CSV_HEADER = "timestamp,user_id,session_id,prompt_token_count,candidates_token_count,total_token_count,cached_content_token_count,thoughts_token_count,prompt_tokens_details,cache_tokens_details,candidates_tokens_details\n"
+
+# Verify or bootstrap local CSV file header
+if not os.path.exists(TRACE_FILE):
+    with open(TRACE_FILE, "w", encoding="utf-8") as f:
+        f.write(CSV_HEADER)
+
+usage_logger = logging.getLogger("gemini_usage_trace")
+usage_logger.setLevel(logging.INFO)
+usage_logger.propagate = False  
+
+# Local CSV File Handler
+file_handler = logging.FileHandler(TRACE_FILE)
+file_handler.setFormatter(logging.Formatter("%(message)s"))
+usage_logger.addHandler(file_handler)
+
+# Google Cloud Logging Handler
+try:
+    from google.cloud import logging as cloud_logging
+    from google.cloud.logging.handlers import CloudLoggingHandler
+    
+    cl_client = cloud_logging.Client()
+    cl_handler = CloudLoggingHandler(cl_client, name="gemini-live-usage-trace")
+    cl_handler.setFormatter(logging.Formatter("%(message)s"))
+    usage_logger.addHandler(cl_handler)
+    logger.info("Google Cloud Logging handler attached to usage_logger successfully.")
+except ImportError:
+    logger.warning("google-cloud-logging package not found. Cloud Logging fallback active.")
+
+def format_modality_details(details_list) -> str:
+    """Flattens list of ModalityTokenCount objects into a safe CSV column format."""
+    if not details_list:
+        return ""
+    items = []
+    for item in details_list:
+        modality = getattr(item, "modality", "UNKNOWN")
+        token_count = getattr(item, "token_count", 0)
+        items.append(f"{modality}:{token_count}")
+    return "|".join(items)
+# =========================================================================
+
 # Suppress Pydantic serialization warnings
 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
 
@@ -266,7 +311,48 @@ async def websocket_endpoint(
             live_request_queue=live_request_queue,
             run_config=run_config,
         ):
+
+            # =========================================================================
+            # NEW: CSV Metrics Interception & Extract Logic
+            # =========================================================================
+            if hasattr(event, "usage_metadata") and event.usage_metadata:
+                usage = event.usage_metadata
+                
+                # Dynamic list parser to guard against varying model features
+                p_details = format_modality_details(getattr(usage, "prompt_tokens_details", None))
+                c_details = format_modality_details(getattr(usage, "cache_tokens_details", None))
+                cand_details = format_modality_details(getattr(usage, "candidates_tokens_details", None))
+                
+                timestamp_str = time.strftime("%Y-%m-%d %H:%M:%S")
+                
+                # Assemble complete CSV token telemetry metrics line
+                csv_row = (
+                    f"{timestamp_str},{user_id},{session_id},"
+                    f"{getattr(usage, 'prompt_token_count', 0)},"
+                    f"{getattr(usage, 'candidates_token_count', 0)},"
+                    f"{getattr(usage, 'total_token_count', 0)},"
+                    f"{getattr(usage, 'cached_content_token_count', 0)},"
+                    f"{getattr(usage, 'thoughts_token_count', 0)},"
+                    f"\"{p_details}\",\"{c_details}\",\"{cand_details}\""
+                )
+                
+                # Assemble complete CSV token telemetry metrics line
+                csv_row_display = (
+                    f"{timestamp_str},{user_id},{session_id},"
+                    f"prompt_token_count {getattr(usage, 'prompt_token_count', 0)},"
+                    f"candidates_token_count {getattr(usage, 'candidates_token_count', 0)},"
+                    f"total_token_count {getattr(usage, 'total_token_count', 0)},"
+                    f"cached_content_token_count {getattr(usage, 'cached_content_token_count', 0)},"
+                    f"thoughts_token_count {getattr(usage, 'thoughts_token_count', 0)},"
+                    f"\"{p_details}\",\"{c_details}\",\"{cand_details}\""
+                )                
+                
+                usage_logger.info(csv_row)
+                logger.info("downstream_task started")
+            # =========================================================================
+
             event_json = event.model_dump_json(exclude_none=True, by_alias=True)
+
             event_dict = json.loads(event_json)
             
             event_type = None
