@@ -432,10 +432,10 @@ async def websocket_endpoint(
                 else:
                     if(event_type in ("function_call", "function_response")):                
                         logger.info(f"### RESPONSE TO FRONTEND - {event_json}")
-                            if(event_type in ("function_call")):
-                                usage_logger.info(f"function_call {len(json.dumps(event_json)}")
-                            else:
-                                usage_logger.info(f"function_response {len(json.dumps(event_json)}")
+                        if(event_type in ("function_call")):
+                            usage_logger.info(f"function_call {len(json.dumps(event_json)}")
+                        else:
+                            usage_logger.info(f"function_response {len(json.dumps(event_json)}")
                     await websocket.send_text(event_json)                    
             else:                
                 # logger.info(f"### RESPONSE TO FRONTEND - {event_json}")
