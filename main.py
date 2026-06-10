@@ -50,7 +50,24 @@ app_name = config.APP_NAME
 agent_config = config.agent_config
 
 activate(InstrumentationConfig(
-    project_id=agent_config.GCP_PROJECT_ID
+    project_id=agent_config.GCP_PROJECT_ID,
+    
+    # Export settings
+    enable_gcp_export=True,                # Push metrics to Cloud Monitoring
+    enable_json_export=True,               # Write local JSON file
+    enable_dashboard=True,                 # Auto-create Cloud dashboard
+
+    # Timing
+    export_interval_s=15.0,               # OTel export interval (min 10s)
+    json_flush_interval_s=30.0,            # JSON file flush interval
+
+    # Cloud Monitoring
+    metric_prefix="workload.googleapis.com",  # Metric type prefix
+    dashboard_name="Gemini Live API Metrics",  # Dashboard display name
+
+    # Audio config (for duration calculations)
+    input_sample_rate=16000,               # Input audio sample rate
+    output_sample_rate=24000,              # Output audio sample rate    
 ))
 
 app = FastAPI(title="Aris: The Smart Home Agent")
