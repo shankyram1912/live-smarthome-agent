@@ -20,7 +20,7 @@ load_dotenv(override=True)
 from gemini_live_telemetry import activate, InstrumentationConfig
 
 activate(InstrumentationConfig(
-    project_id=os.getenv("GOOGLE_CLOUD_PROJECT")
+    project_id=os.getenv("GOOGLE_CLOUD_PROJECT"),
     
     # Export settings
     enable_gcp_export=True,                # Push metrics to Cloud Monitoring
