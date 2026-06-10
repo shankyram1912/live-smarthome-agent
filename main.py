@@ -317,38 +317,46 @@ async def websocket_endpoint(
             # =========================================================================
             if hasattr(event, "usage_metadata") and event.usage_metadata:
                 usage = event.usage_metadata
-                
-                # Dynamic list parser to guard against varying model features
+                    
+                # 1. Clean details fields from internal lists
                 p_details = format_modality_details(getattr(usage, "prompt_tokens_details", None))
-                cand_details = format_modality_details(getattr(usage, "candidates_tokens_details", None))
                 c_details = format_modality_details(getattr(usage, "cache_tokens_details", None))
+                cand_details = format_modality_details(getattr(usage, "candidates_tokens_details", None))
                 
                 timestamp_str = time.strftime("%Y-%m-%d %H:%M:%S")
                 
-                # Assemble complete CSV token telemetry metrics line
-                csv_row = (
-                    f"{timestamp_str},{user_id},{session_id},"
-                    f"{getattr(usage, 'total_token_count', 0)},"                    
-                    f"{getattr(usage, 'prompt_token_count', 0)},"
-                    f"\"{p_details}\"",
-                    f"{getattr(usage, 'candidates_token_count', 0)},"
-                    f"\"{cand_details}\""
-                    f"{getattr(usage, 'cached_content_token_count', 0)},"
-                    f"\"{c_details}\""                    
-                    f"{getattr(usage, 'thoughts_token_count', 0)},"
-                    f"{getattr(event, "turn_complete", False)}"
-                )
+                # 2. Extract values with fallback to avoid explicit None values from breaking formatting
+                total_tokens = getattr(usage, 'total_token_count', 0) or 0
+                prompt_tokens = getattr(usage, 'prompt_token_count', 0) or 0
+                cand_tokens = getattr(usage, 'candidates_token_count', 0) or 0
+                cached_tokens = getattr(usage, 'cached_content_token_count', 0) or 0
+                thoughts_tokens = getattr(usage, 'thoughts_token_count', 0) or 0
+                turn_complete = getattr(event, 'turn_complete', False) or False
+
+                # 3. Spreadsheet-ready CSV Row for the actual background trace log file 
+                csv_fields = [
+                    str(timestamp_str), str(user_id), str(session_id),
+                    str(total_tokens), str(prompt_tokens), f'"{p_details}"',
+                    str(cand_tokens), f'"{cand_details}"', str(cached_tokens),
+                    f'"{c_details}"', str(thoughts_tokens), str(turn_complete)
+                ]
+                csv_row = ",".join(csv_fields)
                 
-                # Assemble complete CSV token telemetry metrics line
+                # Write the clean data row straight into the backend logs
+                usage_logger.info(csv_row)
+
+                # 4. Human-readable visualization layout (Implicit multi-line string concatenation)
+                # NOTE: Keep the commas strictly INSIDE the quotes to avoid creating a tuple.
                 csv_row_display = (
                     f"{timestamp_str},{user_id},{session_id},"
-                    f" total_token_count {getattr(usage, 'total_token_count', 0)},"                    
-                    f" prompt_token_count {getattr(usage, 'prompt_token_count', 0)}; {p_details},"
-                    f" candidates_token_count {getattr(usage, 'candidates_token_count', 0)}; {cand_details},"
-                    f" cached_content_token_count {getattr(usage, 'cached_content_token_count', 0)}; {c_details}"
-                    f" thoughts_token_count {getattr(usage, 'thoughts_token_count', 0)},"
+                    f" total_token_count {total_tokens},"
+                    f" prompt_token_count {prompt_tokens}; {p_details},"
+                    f" candidates_token_count {cand_tokens}; {cand_details},"
+                    f" cached_content_token_count {cached_tokens}; {c_details},"
+                    f" thoughts_token_count {thoughts_tokens},"
+                    f" turn_complete {turn_complete}"
                 )                
-                
+                                
                 usage_logger.info(csv_row)
                 logger.info(csv_row_display)
             # =========================================================================
